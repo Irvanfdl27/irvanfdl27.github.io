@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/d/1_4llqCMNoBDmwDHsI7RYsCM6rSK5wEjw">    
+    <title>TKA 2025 LB01</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            background-image: linear-gradient(to right, #4facfe 0%, #00f2fe 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2rem;
+            flex-grow: 1;
+        }
+        .card-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+        }
+        .card {
+            background-color: white;
+            padding: 2.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 100%;
+            max-width: 350px;
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            cursor: pointer;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .card:hover {
+            transform: translateY(-10px) scale(1.03);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+        .card-text {
+            color: #4b5563;
+        }
+        .icon-wrapper {
+            background-color: #4caf50;
+            color: white;
+            font-size: 3rem;
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .card:hover .icon-wrapper {
+            background-color: #43a047;
+        }
+        @media (min-width: 768px) {
+            .card-container {
+                flex-direction: row;
+                flex-wrap: nowrap;
+            }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .header {
+            color: white;
+            font-size: 2.5rem;
+            font-weight: 800;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .footer {
+            margin-top: 2rem;
+            text-align: center;
+        }
+        .footer-link {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.75rem 1.5rem;
+            background-color: #25D366; /* WhatsApp green */
+            color: white;
+            border-radius: 9999px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease-in-out;
+        }
+        .footer-link:hover {
+            background-color: #128C7E;
+        }
+        .footer-link i {
+            margin-right: 0.5rem;
+            font-size: 1.25rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 class="header">TES KOMPETENSI AKADEMIK</h1>
+    <div class="card-container">
+        <!-- Card Proktor -->
+        <a href="Proktor.html" class="card" aria-label="Proktor">
+            <div class="icon-wrapper bg-green-500">
+                <i class="fas fa-user-tie"></i>
+            </div>
+            <h2 class="card-title">Proktor</h2>
+            <p class="card-text">Manajemen sistem ujian dan administrasi sekolah.</p>
+        </a>
+
+        <!-- Card Guru -->
+        <a href="Admin_TKA.html" class="card" aria-label="Guru">
+            <div class="icon-wrapper bg-blue-500">
+                <i class="fas fa-chalkboard-teacher"></i>
+            </div>
+            <h2 class="card-title">Guru</h2>
+            <p class="card-text">Manajemen kelas, nilai, dan materi pembelajaran.</p>
+        </a>
+
+        <!-- Card Murid -->
+        <a href="SiswaTKA.html" class="card" aria-label="Murid">
+            <div class="icon-wrapper bg-red-500">
+                <i class="fas fa-user-graduate"></i>
+            </div>
+            <h2 class="card-title">Murid</h2>
+            <p class="card-text">Akses jadwal, materi, dan informasi akademik.</p>
+        </a>
+    </div>
+</div>
+
+<footer class="footer">
+    <a href="https://wa.me/6281310051985" target="_blank" class="footer-link">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+</footer>
+
+</body>
+</html>

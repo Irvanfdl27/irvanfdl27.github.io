@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/d/1_4llqCMNoBDmwDHsI7RYsCM6rSK5wEjw">
+    <title>Admin Panel - Manajemen Soal TKA</title>
+    <!-- Menambahkan Font Awesome untuk ikon -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* General Styling */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; 
+            background-color: #f4f7f6; 
+            margin: 20px; 
+            color: #333; 
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: auto; 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 12px; 
+            box-shadow: 0 6px 12px rgba(0,0,0,0.1); 
+            /* Sembunyikan kontainer utama pada awalnya */
+            display: none;
+        }
+        h1, h2 { 
+            color: #0056b3; 
+            text-align: center; 
+        }
+        label { 
+            font-weight: bold; 
+            margin-bottom: 5px; 
+            display: block; 
+            color: #555;
+        }
+        select, input[type="text"], input[type="url"], textarea { 
+            width: 100%; 
+            padding: 12px; 
+            margin-bottom: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #ccc; 
+            box-sizing: border-box; 
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        select:focus, input:focus, textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+        button, .btn { 
+            color: white; 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 16px; 
+            font-weight: 500;
+            margin-left: 10px; 
+            transition: all 0.2s ease-in-out; 
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+        button:hover, .btn:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        .btn-primary { background-color: #007bff; }
+        .btn-success { background-color: #28a745; }
+        .btn-whatsapp { background-color: #25D366; }
+        .btn-warning { background-color: #ffc107; color: #212529; }
+        .btn-danger { background-color: #dc3545; }
+        .btn-secondary { background-color: #6c757d; }
+
+        .controls {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .controls select {
+            max-width: 600px;
+            margin-bottom: 0;
+        }
+        .controls .btn-group {
+            margin-left: auto; /* Mendorong grup tombol ke kanan */
+        }
+
+        .table-wrapper {
+            max-height: 65vh;
+            overflow-y: auto;
+            overflow-x: auto;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; vertical-align: top; }
+        th { background-color: #007bff; color: white; position: sticky; top: 0; z-index: 2; }
+        
+        .action-btn {
+            width: 20px;
+            height: 20px;
+            padding: 0;
+            margin-right: 5px;
+        }
+        .icon-only-btn {
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            font-size: 18px;
+        }
+
+        /* Base Modal Styling */
+        .modal {
+            display: none; position: fixed; z-index: 1000; left: 0; top: 0;
+            width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); 
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal-content {
+            background-color: #fefefe; margin: 5% auto; padding: 0; border: none;
+            width: 80%; border-radius: 10px; position: relative;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); overflow: hidden;
+            animation: slideIn 0.4s ease-out;
+        }
+        @keyframes slideIn { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal-header {
+            padding: 18px 25px; border-bottom: 1px solid #e9ecef;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .modal-header h2 { margin: 0; font-size: 1.6em; color: #343a40; }
+        .modal-body { padding: 25px; max-height: 65vh; overflow-y: auto; }
+        .modal-footer { padding: 15px 25px; text-align: right; border-top: 1px solid #e9ecef; background-color: #f8f9fa; }
+        .close-btn { color: #6c757d; font-size: 32px; font-weight: bold; cursor: pointer; transition: color 0.2s; }
+        .close-btn:hover, .close-btn:focus { color: #343a40; }
+        
+        .custom-modal .modal-content { max-width: 480px; margin: 10% auto; }
+        .custom-modal .modal-header { color: white; }
+        .custom-modal .modal-header h2 { color: white; }
+        .custom-modal .modal-header .close-btn { color: white; opacity: 0.8; }
+        .custom-modal .modal-header.success { background-color: #28a745; }
+        .custom-modal .modal-header.error { background-color: #dc3545; }
+        .custom-modal .modal-header.info { background-color: #0d6efd; }
+        .custom-modal .modal-header.confirm { background-color: #ffc107; }
+        .custom-modal .modal-header.confirm h2, .custom-modal .modal-header.confirm .close-btn { color: #212529; }
+        .custom-modal .modal-body { font-size: 1.1em; line-height: 1.6; text-align: center; }
+        .custom-modal .modal-footer { display: flex; justify-content: center; gap: 15px; }
+        
+        .option-group { border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fdfdfd; }
+        .hidden-inputs { display: none; }
+        .inline-group { display: flex; gap: 15px; align-items: flex-end; }
+        .inline-group .form-item { flex: 1; }
+        .form-item-shrink { flex: 0 0 350px; }
+        .pgk-group { display:flex; align-items:center; gap:15px; }
+        .pgk-group input[type="checkbox"] { width:20px; height:20px; flex-shrink:0; }
+
+        /* === Styling untuk Modal Password === */
+        #password-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(10, 25, 47, 0.85);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.5s ease-out;
+        }
+        .password-box {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 40px;
+            border-radius: 15px;
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+        .password-box h2 {
+            color: #fff;
+            margin-bottom: 25px;
+        }
+        .glow-input {
+            width: 100%;
+            padding: 15px;
+            background: transparent;
+            border: 2px solid rgba(0, 191, 255, 0.5);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1.1em;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        .glow-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+        .glow-input:focus {
+            outline: none;
+            border-color: #00bfff;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.8), 0 0 25px rgba(0, 191, 255, 0.6);
+        }
+        #password-error {
+            color: #ff4d4d;
+            height: 20px;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+        /* PERUBAHAN: Styling untuk container tombol password */
+        .password-actions {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .password-actions .btn {
+            flex: 1; /* Membuat tombol memiliki lebar yang sama */
+            margin-left: 0;
+        }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menambahkan Modal Password -->
+    <div id="password-modal">
+        <div class="password-box">
+            <h2>Autentikasi Diperlukan</h2>
+            <form id="password-form">
+                <input type="password" id="password-input" class="glow-input" placeholder="MASUKAN PASSWORD">
+                <p id="password-error"></p>
+                <!-- PERUBAHAN: Struktur tombol diubah -->
+                <div class="password-actions">
+                    <a href="SiswaTKA" class="btn btn-secondary">User</a>
+                    <button type="submit" class="btn btn-primary">MASUK</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Menambahkan ID ke div container utama -->
+    <div class="container" id="main-container">
+        <h1>Admin Panel Manajemen Soal TKA</h1>
+        <div class="controls">
+            <select id="sheetSelector">
+                <option value="TKA1">TKA1</option><option value="TKA2">TKA2</option><option value="TKA3">TKA3</option><option value="TKA4">TKA4</option><option value="TKA5">TKA5</option>
+            </select>
+
+            <div class="btn-group">
+                <button id="loadDataBtn" class="btn-primary" title="Tampilkan Data">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button id="showFormBtn" class="btn-success icon-only-btn" title="Tambah Soal Baru">
+                    <i class="fas fa-plus"></i>
+                </button>
+                <a href="https://wa.me/6281310051985" target="_blank" class="btn btn-whatsapp icon-only-btn" title="Hubungi via WhatsApp">
+                    <i class="fab fa-whatsapp"></i>
+                </a>
+            </div>
+        </div>
+        
+        <div id="loader" style="display: none; text-align:center; padding:20px; font-size: 1.2em;">Memuat data...</div>
+        
+        <div class="table-wrapper">
+            <table id="dataTable">
+                <thead><tr><th>Aksi</th><th>No</th><th>TYPE SOAL</th><th>PERTANYAAN</th><th>IMAGE_URL</th><th>OPTION1</th><th>ANSWER1</th><th>OPTION2</th><th>ANSWER2</th><th>OPTION3</th><th>ANSWER3</th><th>OPTION4</th><th>ANSWER4</th><th>OPTION5</th><th>ANSWER5</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Form Utama -->
+    <div id="soalModal" class="modal">
+        <div class="modal-content">
+             <div class="modal-header">
+                <h2 id="formTitle"></h2>
+                <span class="close-btn" id="mainFormCloseBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="soalForm">
+                    <input type="hidden" id="rowIndex" name="rowIndex">
+                    <div><label for="typeSoal">TIPE SOAL</label>
+                        <select id="typeSoal" name="typeSoal" required>
+                            <option value="">-- Pilih Tipe Soal --</option>
+                            <option value="pilihan-ganda">Pilihan Ganda</option>
+                            <option value="pilihan-ganda-kompleks">Pilihan Ganda Kompleks</option>
+                            <option value="benar-salah">Benar Salah</option>
+                            <option value="menjodohkan">Menjodohkan</option>
+                        </select>
+                    </div>
+                    <div><label for="pertanyaan">PERTANYAAN</label><textarea id="pertanyaan" name="pertanyaan" rows="3" required></textarea></div>
+                    <div><label for="imageUrl">IMAGE_URL (Opsional)</label><input type="url" id="imageUrl" name="imageUrl"></div>
+                    <div id="options-and-answers-area"></div>
+                    <div class="hidden-inputs">
+                        <input type="text" name="option1" id="option1"><input type="text" name="option2" id="option2"><input type="text" name="option3" id="option3"><input type="text" name="option4" id="option4"><input type="text" name="option5" id="option5">
+                        <input type="text" name="answer1" id="answer1"><input type="text" name="answer2" id="answer2"><input type="text" name="answer3" id="answer3"><input type="text" name="answer4" id="answer4"><input type="text" name="answer5" id="answer5">
+                    </div>
+                     <div class="modal-footer">
+                        <button type="submit" id="saveBtn" class="btn-primary">Simpan</button>
+                        <button type="button" id="cancelBtn" class="btn-secondary">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal Notifikasi Kustom (Pengganti Alert) -->
+    <div id="alertModal" class="modal custom-modal">
+        <div class="modal-content">
+            <div class="modal-header" id="alertModalHeader">
+                <h2 id="alertModalTitle"></h2>
+                <span class="close-btn" id="alertModalCloseBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="alertModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="alertModalOkBtn" class="btn-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Kustom (Pengganti Confirm) -->
+    <div id="confirmModal" class="modal custom-modal">
+        <div class="modal-content">
+            <div class="modal-header confirm">
+                <h2>Konfirmasi Tindakan</h2>
+                <span class="close-btn" id="confirmModalCloseBtn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <p id="confirmModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmModalYesBtn" class="btn-danger">Ya, Lanjutkan</button>
+                <button id="confirmModalNoBtn" class="btn-secondary">Batal</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzq2I4VIXFBE5ubdyB0nZ7IYztveZQqkYiX2XFj3aTWy5fGHU2IL8EQ3I47T1Fy4_wY/exec';
+    const soalForm = document.getElementById('soalForm');
+    const typeSoalSelect = document.getElementById('typeSoal');
+    const container = document.getElementById('options-and-answers-area');
+    const tableBody = document.querySelector('#dataTable tbody');
+    const loader = document.getElementById('loader');
+    const soalModal = document.getElementById('soalModal');
+    let currentData = [];
+
+    function getEl(id) { return document.getElementById(id); }
+
+    // --- FUNGSI HELPER MODAL KUSTOM ---
+    function showAlert(message, type = 'info') { // types: 'success', 'error', 'info'
+        const titleMap = { success: 'Berhasil', error: 'Terjadi Kesalahan', info: 'Informasi' };
+        getEl('alertModalTitle').textContent = titleMap[type] || 'Notifikasi';
+        getEl('alertModalMessage').innerHTML = message;
+        
+        const header = getEl('alertModalHeader');
+        header.className = 'modal-header'; // Reset
+        header.classList.add(type);
+
+        const alertModal = getEl('alertModal');
+        alertModal.style.display = 'block';
+
+        const okBtn = getEl('alertModalOkBtn');
+        const closeBtn = getEl('alertModalCloseBtn');
+
+        function closeHandler() {
+            alertModal.style.display = 'none';
+            okBtn.removeEventListener('click', closeHandler);
+            closeBtn.removeEventListener('click', closeHandler);
+            window.removeEventListener('click', windowClickHandler);
+        }
+
+        function windowClickHandler(event) { if (event.target == alertModal) closeHandler(); }
+
+        okBtn.onclick = closeHandler;
+        closeBtn.onclick = closeHandler;
+        window.addEventListener('click', windowClickHandler);
+    }
+
+    function showConfirm(message) {
+        return new Promise(resolve => {
+            const confirmModal = getEl('confirmModal');
+            getEl('confirmModalMessage').innerHTML = message;
+            confirmModal.style.display = 'block';
+
+            const yesBtn = getEl('confirmModalYesBtn');
+            const noBtn = getEl('confirmModalNoBtn');
+            const closeBtn = getEl('confirmModalCloseBtn');
+            
+            function cleanupAndResolve(value) {
+                confirmModal.style.display = 'none';
+                yesBtn.onclick = null;
+                noBtn.onclick = null;
+                closeBtn.onclick = null;
+                window.removeEventListener('click', windowClickHandler);
+                resolve(value);
+            }
+
+            const windowClickHandler = (event) => { if (event.target == confirmModal) cleanupAndResolve(false); };
+
+            yesBtn.onclick = () => cleanupAndResolve(true);
+            noBtn.onclick = () => cleanupAndResolve(false);
+            closeBtn.onclick = () => cleanupAndResolve(false);
+            window.addEventListener('click', windowClickHandler);
+        });
+    }
+
+    // --- LOGIKA FORM (TIDAK DIUBAH SECARA SIGNIFIKAN) ---
+    function updateFormUI(type, data = {}) {
+        container.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+            getEl(`option${i}`).value = data[`OPTION${i}`] || '';
+            getEl(`answer${i}`).value = data[`ANSWER${i}`] || '';
+        }
+        let uiHtml = '';
+        switch (type) {
+            case 'pilihan-ganda':
+                for (let i = 1; i <= 5; i++) { uiHtml += `<div class="option-group"><label>OPTION ${i}</label><input type="text" id="ui-option${i}" value="${getEl(`option${i}`).value}"></div>`; }
+                uiHtml += `<div class="option-group"><label>Kunci Jawaban (Pilih Satu):</label>`;
+                for (let i = 1; i <= 5; i++) {
+                    const isChecked = (getEl('answer1').value === getEl(`option${i}`).value && getEl('answer1').value !== '');
+                    uiHtml += `<label style="display:inline-block; margin-right:15px;"><input type="radio" name="jawaban" value="${i}" ${isChecked ? 'checked' : ''}> Opsi ${i}</label>`;
+                }
+                uiHtml += `</div>`;
+                break;
+            case 'pilihan-ganda-kompleks':
+                for (let i = 1; i <= 5; i++) {
+                    const isChecked = getEl(`answer${i}`).value !== '';
+                    uiHtml += `<div class="option-group pgk-group"><input type="checkbox" id="ui-check${i}" value="${i}" ${isChecked ? 'checked' : ''}><div class="form-item"><label for="ui-option${i}">OPTION ${i}</label><input type="text" id="ui-option${i}" value="${getEl(`option${i}`).value}"></div></div>`;
+                }
+                break;
+            case 'benar-salah':
+                for (let i = 1; i <= 5; i++) {
+                    uiHtml += `<div class="option-group"><label>Pernyataan ${i}</label><div class="inline-group"><div class="form-item"><input type="text" id="ui-option${i}" placeholder="Isi pernyataan di sini..." value="${getEl(`option${i}`).value}"></div><div class="form-item-shrink"><select id="ui-answer${i}"><option value="">-- Jawaban --</option><option value="Benar" ${getEl(`answer${i}`).value === 'Benar' ? 'selected' : ''}>Benar</option><option value="Salah" ${getEl(`answer${i}`).value === 'Salah' ? 'selected' : ''}>Salah</option></select></div></div></div>`;
+                }
+                break;
+            case 'menjodohkan':
+                for (let i = 1; i <= 5; i++) {
+                    uiHtml += `<div class="option-group"><div class="inline-group"><div class="form-item"><label for="ui-option${i}">OPTION ${i}</label><input type="text" id="ui-option${i}" value="${getEl(`option${i}`).value}"></div><div class="form-item"><label for="ui-answer${i}">ANSWER ${i} (Pasangan)</label><input type="text" id="ui-answer${i}" value="${getEl(`answer${i}`).value}"></div></div></div>`;
+                }
+                break;
+        }
+        container.innerHTML = uiHtml;
+    }
+    function collectAnswers() {
+        const type = typeSoalSelect.value;
+        for (let i = 1; i <= 5; i++) { getEl(`option${i}`).value = ''; getEl(`answer${i}`).value = ''; }
+        for (let i = 1; i <= 5; i++) {
+            const ui_option = getEl(`ui-option${i}`);
+            if (ui_option) getEl(`option${i}`).value = ui_option.value;
+        }
+        switch(type) {
+            case 'pilihan-ganda':
+                const radio = document.querySelector('input[name="jawaban"]:checked');
+                if (radio) getEl('answer1').value = getEl(`option${radio.value}`).value;
+                break;
+            case 'pilihan-ganda-kompleks':
+                for (let i = 1; i <= 5; i++) {
+                    const checkbox = getEl(`ui-check${i}`);
+                    if (checkbox && checkbox.checked) { getEl(`answer${i}`).value = getEl(`option${i}`).value; }
+                }
+                break;
+            case 'benar-salah':
+            case 'menjodohkan':
+                for (let i = 1; i <= 5; i++) {
+                    const ui_answer = getEl(`ui-answer${i}`);
+                    if (ui_answer) getEl(`answer${i}`).value = ui_answer.value;
+                }
+                break;
+        }
+    }
+    
+    // --- LOGIKA UTAMA APLIKASI ---
+    async function handleSave(event) {
+        event.preventDefault();
+        collectAnswers();
+        getEl('saveBtn').disabled = true; getEl('saveBtn').textContent = 'Menyimpan...';
+        const formData = new FormData(soalForm);
+        const data = Object.fromEntries(formData.entries());
+        data.sheetName = getEl('sheetSelector').value;
+        data.action = data.rowIndex ? 'update' : 'create';
+        try {
+            const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success) {
+                hideForm();
+                await fetchData();
+                showAlert(result.message, 'success');
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            showAlert(`Gagal menyimpan data: ${error.message}`, 'error');
+        } finally {
+            getEl('saveBtn').disabled = false;
+            getEl('saveBtn').textContent = 'Simpan';
+        }
+    }
+    
+    function showForm(mode = 'add', data = {}, index = -1) {
+        soalForm.reset();
+        getEl('rowIndex').value = '';
+        container.innerHTML = '';
+        if (mode === 'edit') {
+            getEl('formTitle').textContent = `Edit Soal No. ${index + 1}`;
+            getEl('rowIndex').value = index + 2;
+            getEl('typeSoal').value = data.TYPE_SOAL;
+            getEl('pertanyaan').value = data.PERTANYAAN;
+            getEl('imageUrl').value = data.IMAGE_URL;
+            updateFormUI(data.TYPE_SOAL, data);
+        } else {
+            getEl('formTitle').textContent = 'Tambah Soal Baru';
+        }
+        soalModal.style.display = 'block';
+    }
+
+    function hideForm() {
+        soalModal.style.display = 'none';
+        soalForm.reset();
+    }
+
+    async function fetchData() {
+        loader.style.display = 'block';
+        tableBody.innerHTML = '';
+        try {
+            const sheetName = getEl('sheetSelector').value;
+            const res = await fetch(`${APPS_SCRIPT_URL}?action=read&sheetName=${sheetName}`);
+            const result = await res.json();
+            if (result.error) throw new Error(result.error);
+            currentData = result.data;
+            displayData(currentData);
+        } catch (error) {
+            showAlert(`Gagal mengambil data: ${error.message}`, 'error');
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    function displayData(data) {
+        tableBody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="15" style="text-align:center;">Tidak ada data. Silakan tambahkan soal baru.</td></tr>`;
+            return;
+        }
+        data.forEach((rowData, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <button class="edit-btn btn-warning action-btn" data-index="${index}" title="Edit Soal">
+                        <i class="fas fa-pencil-alt"></i>
+                    </button>
+                    <button class="delete-btn btn-danger action-btn" data-index="${index}" title="Hapus Soal">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </td>
+                <td>${index + 1}</td>
+                <td>${rowData.TYPE_SOAL || ''}</td>
+                <td>${rowData.PERTANYAAN || ''}</td>
+                <td>${rowData.IMAGE_URL || ''}</td>
+                <td>${rowData.OPTION1 || ''}</td>
+                <td>${rowData.ANSWER1 || ''}</td>
+                <td>${rowData.OPTION2 || ''}</td>
+                <td>${rowData.ANSWER2 || ''}</td>
+                <td>${rowData.OPTION3 || ''}</td>
+                <td>${rowData.ANSWER3 || ''}</td>
+                <td>${rowData.OPTION4 || ''}</td>
+                <td>${rowData.ANSWER4 || ''}</td>
+                <td>${rowData.OPTION5 || ''}</td>
+                <td>${rowData.ANSWER5 || ''}</td>`;
+            tableBody.appendChild(row);
+        });
+    }
+
+    async function handleDelete(index) {
+        const rowData = currentData[index];
+        const message = `Anda yakin ingin menghapus soal nomor ${index + 1} secara permanen?<br><br><i>"${rowData.PERTANYAAN}"</i>`;
+        
+        const confirmed = await showConfirm(message);
+        if (!confirmed) return;
+
+        loader.style.display = 'block';
+        try {
+            const res = await fetch(APPS_SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: 'delete', sheetName: getEl('sheetSelector').value, rowIndex: index + 2 })
+            });
+            const result = await res.json();
+            if (result.success) {
+                await fetchData();
+                showAlert(result.message, 'success');
+            } else {
+                throw new Error(result.message);
+            }
+        } catch (error) {
+            showAlert(`Gagal menghapus data: ${error.message}`, 'error');
+        } finally {
+            loader.style.display = 'none';
+        }
+    }
+
+    // --- FUNGSI INISIALISASI SETELAH PASSWORD BENAR ---
+    function initializeApp() {
+        // Menggunakan ID yang benar untuk menampilkan kontainer utama
+        getEl('main-container').style.display = 'block';
+        
+        // Tambahkan semua event listener untuk aplikasi utama
+        getEl('loadDataBtn').addEventListener('click', fetchData);
+        getEl('showFormBtn').addEventListener('click', () => showForm('add'));
+        soalForm.addEventListener('submit', handleSave);
+        typeSoalSelect.addEventListener('change', () => updateFormUI(typeSoalSelect.value));
+        
+        getEl('dataTable').addEventListener('click', function(e) {
+            const editBtn = e.target.closest('.edit-btn');
+            const deleteBtn = e.target.closest('.delete-btn');
+
+            if (editBtn) {
+                const index = parseInt(editBtn.dataset.index);
+                showForm('edit', currentData[index], index);
+            }
+            if (deleteBtn) {
+                handleDelete(parseInt(deleteBtn.dataset.index));
+            }
+        });
+        
+        getEl('cancelBtn').addEventListener('click', hideForm);
+        getEl('mainFormCloseBtn').addEventListener('click', hideForm);
+        window.addEventListener('click', function(event) {
+            if (event.target == soalModal) {
+                hideForm();
+            }
+        });
+
+        // Muat data awal
+        fetchData();
+    }
+
+    // --- LOGIKA MODAL PASSWORD ---
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordModal = getEl('password-modal');
+        const passwordForm = getEl('password-form');
+        const passwordInput = getEl('password-input');
+        const passwordError = getEl('password-error');
+        const correctPassword = 'BANGBIN123';
+
+        // Tampilkan modal password saat halaman dimuat
+        if (passwordModal) {
+            passwordModal.style.display = 'flex';
+        }
+
+        passwordForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const enteredPassword = passwordInput.value;
+
+            if (enteredPassword === correctPassword) {
+                passwordModal.style.opacity = '0';
+                setTimeout(() => {
+                    passwordModal.style.display = 'none';
+                    initializeApp(); // Jalankan aplikasi utama
+                }, 500); // Tunggu animasi fade-out selesai
+            } else {
+                passwordError.textContent = 'Password Salah!';
+                passwordInput.classList.add('shake');
+                passwordInput.value = '';
+
+                // Hapus kelas shake setelah animasi selesai
+                setTimeout(() => {
+                    passwordInput.classList.remove('shake');
+                    passwordError.textContent = ''; // Hapus pesan error
+                }, 1000);
+            }
+        });
+    });
+
+</script>
+</body>
+</html>
+

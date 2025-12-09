@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - TKA</title>
+    <link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/d/1_4llqCMNoBDmwDHsI7RYsCM6rSK5wEjw">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        :root { --primary-color: #007bff; --success-color: #28a745; --danger-color: #dc3545; --warning-color: #ffc107; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f6; margin: 20px; color: #333; }
+        .container { max-width: 1400px; margin: auto; background: #fff; padding: 20px; border-radius: 12px; box-shadow: 0 6px 12px rgba(0,0,0,0.1); display: none; }
+        h1, h2 { color: #0056b3; text-align: center; }
+        label { font-weight: bold; margin-bottom: 5px; display: block; color: #555; }
+        select, input[type="text"], input[type="url"], input[type="password"], textarea, input[type="file"] { width: 100%; padding: 12px; margin-bottom: 12px; border-radius: 6px; border: 1px solid #ccc; box-sizing: border-box; transition: border-color 0.3s, box-shadow 0.3s; }
+        select:focus, input:focus, textarea:focus { border-color: #007bff; box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25); outline: none; }
+        select:disabled, input:disabled { background-color: #e9ecef; cursor: not-allowed; }
+        button, .btn { color: white; padding: 10px 15px; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: 500; margin-left: 10px; transition: all 0.2s ease-in-out; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-flex; align-items: center; justify-content: center; text-decoration: none; }
+        button:hover, .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; transform: none; box-shadow: none; }
+        .btn-primary { background-color: #007bff; } .btn-success { background-color: #28a745; } .btn-whatsapp { background-color: #25D366; } .btn-warning { background-color: #ffc107; color: #212529; } .btn-danger { background-color: #dc3545; } .btn-secondary { background-color: #6c757d; }
+        .controls { display: flex; justify-content: space-between; align-items: center; gap: 5px; margin-bottom: 2px; flex-wrap: wrap; }
+        .controls .control-group { display: flex; align-items: center; gap: 10px; }
+        .controls .control-group input, .controls .control-group select { margin-bottom: 0; }
+        .table-wrapper { max-height: 65vh; overflow-y: auto; overflow-x: auto; border: 1px solid #ddd; border-radius: 8px; margin-top: 20px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; font-size: 14px; vertical-align: top; }
+        th { background-color: #007bff; color: white; position: sticky; top: 0; z-index: 2; }
+        .action-btn { width: 35px; height: 35px; padding: 0; margin-right: 5px; font-size: 14px; }
+        .icon-only-btn { width: 40px; height: 40px; padding: 0; font-size: 18px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.6); animation: fadeIn 0.3s ease-in-out; }
+        .modal-content { background-color: #fefefe; margin: 5% auto; padding: 0; border: none; width: 80%; border-radius: 10px; position: relative; box-shadow: 0 5px 20px rgba(0,0,0,0.3); overflow: hidden; animation: slideIn 0.4s ease-out; }
+        .modal-header { padding: 18px 25px; border-bottom: 1px solid #e9ecef; display: flex; justify-content: space-between; align-items: center; }
+        .modal-header h2 { margin: 0; font-size: 1.6em; color: #343a40; }
+        .modal-body { padding: 25px; max-height: 65vh; overflow-y: auto; }
+        .modal-footer { padding: 15px 25px; text-align: right; border-top: 1px solid #e9ecef; background-color: #f8f9fa; }
+        .close-btn { color: #6c757d; font-size: 32px; font-weight: bold; cursor: pointer; transition: color 0.2s; } .close-btn:hover, .close-btn:focus { color: #343a40; }
+        .custom-modal .modal-content { max-width: 480px; margin: 10% auto; } .custom-modal .modal-header h2 { color: white; } .custom-modal .modal-header .close-btn { color: white; opacity: 0.8; } .custom-modal .modal-header.success { background-color: #28a745; } .custom-modal .modal-header.error { background-color: #dc3545; } .custom-modal .modal-header.info { background-color: #0d6efd; } .custom-modal .modal-header.confirm { background-color: #ffc107; } .custom-modal .modal-header.confirm h2, .custom-modal .modal-header.confirm .close-btn { color: #212529; } .custom-modal .modal-body { font-size: 1.1em; line-height: 1.6; text-align: center; } .custom-modal .modal-footer { display: flex; justify-content: center; gap: 15px; }
+        .option-group { border: 1px solid #e0e0e0; padding: 15px; border-radius: 8px; margin-bottom: 15px; background: #fdfdfd; }
+        .hidden-inputs { display: none; }
+        .inline-group { display: flex; gap: 15px; align-items: flex-end; }
+        .inline-group .form-item { flex: 1; }
+        .form-item-shrink { flex: 0 0 350px; }
+        .pgk-group { display:flex; align-items:center; gap:15px; }
+        .pgk-group input[type="checkbox"] { width:20px; height:20px; flex-shrink:0; }
+        #password-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(10, 25, 47, 0.85); backdrop-filter: blur(10px); z-index: 9999; display: flex; align-items: center; justify-content: center; transition: opacity 0.5s ease-out; }
+        .password-box { background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.2); padding: 40px; border-radius: 15px; text-align: center; width: 90%; max-width: 400px; }
+        .password-box h2 { color: #fff; margin-bottom: 25px; }
+        .glow-input { width: 100%; padding: 15px; background: transparent; border: 2px solid rgba(0, 191, 255, 0.5); border-radius: 8px; color: #fff; font-size: 1.1em; text-align: center; transition: all 0.3s ease; box-sizing: border-box; }
+        .glow-input:focus { outline: none; border-color: #00bfff; box-shadow: 0 0 15px rgba(0, 191, 255, 0.8), 0 0 25px rgba(0, 191, 255, 0.6); }
+        .password-actions { display: flex; gap: 15px; margin-top: 20px; }
+        .password-actions .btn { flex: 1; margin-left: 0; }
+        .template-content { display: none; }
+        .template-content.active { display: block; }
+        .mr-2 { margin-right: 8px; }
+        #tka-checkboxes { display: flex; flex-wrap: wrap; gap: 15px; border: 1px solid #ccc; padding: 15px; border-radius: 6px; }
+        #tka-checkboxes label { display: flex; align-items: center; gap: 8px; font-weight: normal; margin-bottom: 0; }
+        #tka-checkboxes input[type="checkbox"] { width: auto; margin-bottom: 0; }
+    </style>
+</head>
+<body>
+    <div id="password-modal">
+        <div class="password-box">
+            <h2>Login Admin</h2>
+            <form id="password-form">
+                <input type="text" id="username-input" class="glow-input" placeholder="USERNAME" style="margin-bottom: 15px;" required>
+                <input type="password" id="password-input" class="glow-input" placeholder="PASSWORD" required>
+                <p id="password-error" style="color: #ff4d4d; height: 20px; margin-top: 15px; font-weight: bold;"></p>
+                <div class="password-actions">
+                    <button type="submit" class="btn btn-primary">MASUK</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <h1>Admin Panel</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <h3 id="welcome-message" style="margin: 0; color: #555;"></h3>
+            </div>
+             <div class="control-group">
+                <button class="btn-primary" id="btn-template-soal"><i class="fas fa-book"></i></button>
+                <button class="btn-secondary" id="btn-template-peserta"><i class="fas fa-user"></i></button>
+                <button class="btn-secondary" id="btn-template-nilai"><i class="fas fa-eye"></i></button>
+            </div>
+        </div>
+
+        <div id="soal-content" class="template-content active">
+             <div class="controls">
+                <h2>
+                    Manajemen Soal
+                    <select id="sheetSelector" style="max-width: 150px; display: inline-block; vertical-align: middle; padding: 8px; margin-left: 10px;">
+                        <option value="TKA1">TKA1</option>
+                        <option value="TKA2">TKA2</option>
+                        <option value="TKA3">TKA3</option>
+                        <option value="TKA4">TKA4</option>
+                        <option value="TKA5">TKA5</option>
+                    </select>
+                </h2>
+                <div class="control-group">
+                    <select id="filterTypeSoal"></select>
+                    <button id="showFormBtn" class="btn-success"><i class="fas fa-plus mr-2"></i></button>
+                </div>
+            </div>
+            <div id="loader-soal" style="display: none; text-align:center; padding:20px;">Memuat data soal...</div>
+            <div class="table-wrapper">
+                <table id="dataTable">
+                    <thead><tr><th>Aksi</th><th>No</th><th>TYPE SOAL</th><th>PERTANYAAN</th><th>IMAGE_URL</th><th>OPTION1</th><th>ANSWER1</th><th>OPTION2</th><th>ANSWER2</th><th>OPTION3</th><th>ANSWER3</th><th>OPTION4</th><th>ANSWER4</th><th>OPTION5</th><th>ANSWER5</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="peserta-content" class="template-content">
+            <div class="controls">
+                <h2>Manajemen Peserta (<span id="sheet-peserta-name" style="color: var(--primary-color);"></span>)</h2>
+                <div class="control-group">
+                    <input type="text" id="filterNamaSiswa" placeholder="Cari Nama Siswa..." style="width: 200px;">
+                    <select id="filterTkaPeserta" style="width: 150px;"></select>
+                    <button id="showUploadModalBtn" class="btn-primary" title="Upload Peserta dari Excel"><i class="fas fa-file-upload"></i></button>
+                    <button id="showPesertaFormBtn" class="btn-success" title="Tambah Peserta Manual"><i class="fas fa-user-plus"></i></button>
+                </div>
+            </div>
+            <div id="loader-peserta" style="display: none; text-align:center; padding:20px;">Memuat data peserta...</div>
+            <div class="table-wrapper">
+                <table id="pesertaTable">
+                    <thead><tr><th>Aksi</th><th>No</th><th>Nama Siswa</th><th>NISN</th><th>Sekolah</th><th>TKA</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+        
+        <div id="nilai-content" class="template-content">
+            <div class="controls">
+                 <h2>Data Nilai Siswa (<span id="sheet-nilai-name" style="color: var(--primary-color);"></span>)</h2>
+                 <div class="control-group">
+                    <input type="text" id="filterNamaNilai" placeholder="Cari Nama Siswa..." style="width: 200px;">
+                    <select id="filterTkaNilai" style="width: 150px;"></select>
+                    <button id="refreshNilaiBtn" class="btn-primary"><i class="fas fa-sync-alt mr-2"></i></button>
+                    <button id="downloadNilaiBtn" class="btn-success" title="Download Nilai (Excel)"><i class="fas fa-file-excel"></i></button>
+                </div>
+            </div>
+            <div id="loader-nilai" style="display: none; text-align:center; padding:20px;">Memuat data nilai...</div>
+            <div class="table-wrapper">
+                <table id="nilaiTable">
+                    <thead></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div id="soalModal" class="modal"> <div class="modal-content"> <div class="modal-header"><h2 id="formTitle"></h2><span class="close-btn" id="mainFormCloseBtn">×</span></div> <div class="modal-body"> <form id="soalForm"> <input type="hidden" id="rowIndex" name="rowIndex"> <div><label for="typeSoal">TIPE SOAL</label><select id="typeSoal" name="typeSoal" required><option value="">-- Pilih Tipe Soal --</option><option value="pilihan-ganda">Pilihan Ganda</option><option value="pilihan-ganda-kompleks">Pilihan Ganda Kompleks</option><option value="benar-salah">Benar Salah</option><option value="menjodohkan">Menjodohkan</option><option value="essay">Essay</option></select></div> <div><label for="pertanyaan">PERTANYAAN</label><textarea id="pertanyaan" name="pertanyaan" rows="3" required></textarea></div> <div><label for="imageUrl">IMAGE_URL (Opsional)</label><input type="url" id="imageUrl" name="imageUrl"></div> <div id="options-and-answers-area"></div> <div class="hidden-inputs"> <input type="text" name="option1" id="option1"><input type="text" name="option2" id="option2"><input type="text" name="option3" id="option3"><input type="text" name="option4" id="option4"><input type="text" name="option5" id="option5"> <input type="text" name="answer1" id="answer1"><input type="text" name="answer2" id="answer2"><input type="text" name="answer3" id="answer3"><input type="text" name="answer4" id="answer4"><input type="text" name="answer5" id="answer5"> </div> <div class="modal-footer"> <button type="submit" id="saveBtn" class="btn-primary">Simpan</button> <button type="button" id="cancelBtn" class="btn-secondary">Batal</button> </div> </form> </div> </div> </div>
+    <div id="alertModal" class="modal custom-modal"> <div class="modal-content"><div class="modal-header" id="alertModalHeader"><h2 id="alertModalTitle"></h2><span class="close-btn" id="alertModalCloseBtn">×</span></div><div class="modal-body"><p id="alertModalMessage"></p></div><div class="modal-footer"><button id="alertModalOkBtn" class="btn-primary">OK</button></div></div> </div>
+    <div id="confirmModal" class="modal custom-modal"> <div class="modal-content"><div class="modal-header confirm"><h2>Konfirmasi Tindakan</h2><span class="close-btn" id="confirmModalCloseBtn">×</span></div><div class="modal-body"><p id="confirmModalMessage"></p></div><div class="modal-footer"><button id="confirmModalYesBtn" class="btn-danger">Ya, Lanjutkan</button><button id="confirmModalNoBtn" class="btn-secondary">Batal</button></div></div> </div>
+    
+    <div id="pesertaModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+             <div class="modal-header"><h2 id="pesertaFormTitle">Form Peserta</h2><span class="close-btn" id="pesertaFormCloseBtn">×</span></div>
+            <div class="modal-body">
+                <form id="pesertaForm">
+                    <div><label for="namaSiswa">Nama Siswa</label><input type="text" id="namaSiswa" name="namaSiswa" required></div>
+                    <div><label for="nisn">NISN</label><input type="text" id="nisn" name="nisn" required></div>
+                    <div><label for="sekolah">Sekolah</label><input type="text" id="sekolah" name="sekolah" required></div>
+                    <div>
+                        <label for="tka-checkboxes">Hak Akses TKA</label>
+                        <div id="tka-checkboxes">
+                            <label><input type="checkbox" name="tka" value="TKA1"> TKA1</label>
+                            <label><input type="checkbox" name="tka" value="TKA2"> TKA2</label>
+                            <label><input type="checkbox" name="tka" value="TKA3"> TKA3</label>
+                            <label><input type="checkbox" name="tka" value="TKA4"> TKA4</label>
+                            <label><input type="checkbox" name="tka" value="TKA5"> TKA5</label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" id="savePesertaBtn" class="btn-primary">Simpan Peserta</button>
+                        <button type="button" id="cancelPesertaBtn" class="btn-secondary">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="uploadModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div class="modal-header">
+                <h2>Upload Data Peserta</h2>
+                <span class="close-btn" id="uploadModalCloseBtn">×</span>
+            </div>
+            <div class="modal-body">
+                <p><strong>Langkah 1:</strong> Unduh file Excel berisi data siswa yang sudah ada. Anda bisa menambahkan siswa baru di baris kosong pada file ini.</p>
+                <button id="downloadFormatBtn" class="btn btn-success" style="margin-left:0; margin-bottom: 20px;"><i class="fas fa-file-download mr-2"></i>Unduh Data Siswa (Excel)</button>
+                <hr style="margin: 20px 0;">
+                <p><strong>Langkah 2:</strong> Pilih file Excel (.xlsx) yang sudah diisi kembali.</p>
+                <p style="font-size: 0.9em; color: #555;">Sistem akan secara otomatis melewati siswa dengan NISN yang sudah terdaftar dan hanya menambahkan siswa baru.</p>
+                <input type="file" id="excelFile" accept=".xlsx, .xls" style="margin-top: 10px;">
+                <div id="upload-loader" style="display: none; text-align:center; padding:20px;">Memproses file...</div>
+            </div>
+            <div class="modal-footer">
+                <button id="processExcelBtn" class="btn-primary">Proses dan Simpan</button>
+                <button type="button" id="cancelUploadBtn" class="btn-secondary">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+<script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw3cTxBZaGXPifzxHKRNk587TWJXdJ2hvQwientv4YNz7Uh7WL04aCWGa365LcgsnIn/exec';
+    
+    let adminPermissions = { sheet: null, namaSekolah: null };
+    let currentSoalData = [];
+    let currentRawSiswaData = [];
+    let currentAggregatedSiswaData = [];
+    let currentFilteredNilaiData = [];
+    let activeTemplate = 'soal';
+    
+    function getEl(id) { return document.getElementById(id); }
+
+    function showAlert(message, type = 'info') {
+        const titleMap = { success: 'Berhasil', error: 'Terjadi Kesalahan', info: 'Informasi' };
+        getEl('alertModalTitle').textContent = titleMap[type] || 'Notifikasi';
+        getEl('alertModalMessage').innerHTML = message;
+        const header = getEl('alertModalHeader');
+        header.className = 'modal-header'; header.classList.add(type);
+        const alertModal = getEl('alertModal'); alertModal.style.display = 'block';
+        const okBtn = getEl('alertModalOkBtn'); const closeBtn = getEl('alertModalCloseBtn');
+        function closeHandler() { alertModal.style.display = 'none'; okBtn.removeEventListener('click', closeHandler); closeBtn.removeEventListener('click', closeHandler); window.removeEventListener('click', windowClickHandler); }
+        function windowClickHandler(event) { if (event.target == alertModal) closeHandler(); }
+        okBtn.onclick = closeHandler; closeBtn.onclick = closeHandler; window.addEventListener('click', windowClickHandler);
+    }
+    function showConfirm(message) {
+        return new Promise(resolve => {
+            const confirmModal = getEl('confirmModal'); getEl('confirmModalMessage').innerHTML = message; confirmModal.style.display = 'block';
+            const yesBtn = getEl('confirmModalYesBtn'); const noBtn = getEl('confirmModalNoBtn'); const closeBtn = getEl('confirmModalCloseBtn');
+            function cleanupAndResolve(value) { confirmModal.style.display = 'none'; yesBtn.onclick = null; noBtn.onclick = null; closeBtn.onclick = null; window.removeEventListener('click', windowClickHandler); resolve(value); }
+            const windowClickHandler = (event) => { if (event.target == confirmModal) cleanupAndResolve(false); };
+            yesBtn.onclick = () => cleanupAndResolve(true); noBtn.onclick = () => cleanupAndResolve(false); closeBtn.onclick = () => cleanupAndResolve(false); window.addEventListener('click', windowClickHandler);
+        });
+    }
+
+    async function postData(data) {
+        try {
+            const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            const result = await res.json();
+            if (result.success === false) throw new Error(result.message || 'Terjadi kesalahan di server.');
+            return result;
+        } catch (error) {
+            showAlert(`Error: ${error.message}`, 'error');
+            return null;
+        }
+    }
+
+    function updateFormUI(type, data = {}) { const optionsContainer = getEl('options-and-answers-area'); optionsContainer.innerHTML = ''; let uiHtml = ''; const getVal = (obj, key, fallback = '') => obj && obj[key] ? obj[key] : fallback; switch (type) { case 'pilihan-ganda': let correctAnswerText = ''; for (let i = 1; i <= 5; i++) { if (getVal(data, `ANSWER${i}`)) { correctAnswerText = getVal(data, `ANSWER${i}`).trim(); break; } } for (let i = 1; i <= 5; i++) { uiHtml += `<div class="option-group"><label>OPTION ${i}</label><input type="text" id="ui-option${i}" value="${getVal(data, `OPTION${i}`)}"></div>`; } uiHtml += `<div class="option-group"><label>Kunci Jawaban (Pilih Satu):</label>`; for (let i = 1; i <= 5; i++) { const optionText = getVal(data, `OPTION${i}`).trim(); const isChecked = (correctAnswerText !== '' && optionText !== '' && correctAnswerText === optionText); uiHtml += `<label style="display:inline-block; margin-right:15px;"><input type="radio" name="jawaban" value="${i}" ${isChecked ? 'checked' : ''}> Opsi ${i}</label>`; } uiHtml += `</div>`; break; case 'pilihan-ganda-kompleks': for (let i = 1; i <= 5; i++) { const optionText = getVal(data, `OPTION${i}`); const answerText = getVal(data, `ANSWER${i}`); const isChecked = (answerText !== '' && optionText !== '' && answerText === optionText); uiHtml += `<div class="option-group pgk-group"><input type="checkbox" id="ui-check${i}" value="${i}" ${isChecked ? 'checked' : ''}><div class="form-item"><label for="ui-option${i}">OPTION ${i}</label><input type="text" id="ui-option${i}" value="${optionText}"></div></div>`; } break; case 'benar-salah': for (let i = 1; i <= 5; i++) { const currentAnswer = getVal(data, `ANSWER${i}`); uiHtml += `<div class="option-group"><label>Pernyataan ${i}</label><div class="inline-group"><div class="form-item"><input type="text" id="ui-option${i}" placeholder="Isi pernyataan di sini..." value="${getVal(data, `OPTION${i}`)}"></div><div class="form-item-shrink"><select id="ui-answer${i}"><option value="">-- Jawaban --</option><option value="Benar" ${currentAnswer === 'Benar' ? 'selected' : ''}>Benar</option><option value="Salah" ${currentAnswer === 'Salah' ? 'selected' : ''}>Salah</option></select></div></div></div>`; } break; case 'menjodohkan': for (let i = 1; i <= 5; i++) { uiHtml += `<div class="option-group"><div class="inline-group"><div class="form-item"><label for="ui-option${i}">OPTION ${i}</label><input type="text" id="ui-option${i}" value="${getVal(data, `OPTION${i}`)}"></div><div class="form-item"><label for="ui-answer${i}">ANSWER ${i} (Pasangan)</label><input type="text" id="ui-answer${i}" value="${getVal(data, `ANSWER${i}`)}"></div></div></div>`; } break; case 'essay': uiHtml = `<div class="option-group"><p style="text-align:center; color: #555;">Untuk tipe soal Essay, jawaban akan diinput langsung oleh siswa dalam bentuk teks. Anda tidak perlu mengisi Opsi atau Kunci Jawaban.</p></div>`; break; } optionsContainer.innerHTML = uiHtml; }
+    function collectAnswers() { const type = getEl('typeSoal').value; for (let i = 1; i <= 5; i++) { getEl(`option${i}`).value = ''; getEl(`answer${i}`).value = ''; } if (type === 'essay') return; for (let i = 1; i <= 5; i++) { const ui_option = getEl(`ui-option${i}`); if (ui_option) getEl(`option${i}`).value = ui_option.value; } switch(type) { case 'pilihan-ganda': const radio = document.querySelector('input[name="jawaban"]:checked'); if (radio) { const selectedIndex = radio.value; const optionText = getEl(`ui-option${selectedIndex}`).value; getEl(`answer${selectedIndex}`).value = optionText; } break; case 'pilihan-ganda-kompleks': for (let i = 1; i <= 5; i++) { const checkbox = getEl(`ui-check${i}`); if (checkbox && checkbox.checked) getEl(`answer${i}`).value = getEl(`ui-option${i}`).value; } break; case 'benar-salah': case 'menjodohkan': for (let i = 1; i <= 5; i++) { const ui_answer = getEl(`ui-answer${i}`); if (ui_answer) getEl(`answer${i}`).value = ui_answer.value; } break; } }
+    function showSoalForm(mode = 'add', data = {}, index = -1) { getEl('soalForm').reset(); getEl('rowIndex').value = ''; getEl('options-and-answers-area').innerHTML = ''; if (mode === 'edit') { getEl('formTitle').textContent = `Edit Soal No. ${index + 1}`; getEl('rowIndex').value = index + 2; getEl('typeSoal').value = data.TYPE_SOAL; getEl('pertanyaan').value = data.PERTANYAAN; getEl('imageUrl').value = data.IMAGE_URL; updateFormUI(data.TYPE_SOAL, data); } else { getEl('formTitle').textContent = 'Tambah Soal Baru'; updateFormUI(getEl('typeSoal').value); } getEl('soalModal').style.display = 'block'; }
+    async function handleSaveSoal(event) { event.preventDefault(); collectAnswers(); getEl('saveBtn').disabled = true; const formData = new FormData(getEl('soalForm')); const data = Object.fromEntries(formData.entries()); data.sheetName = getEl('sheetSelector').value; data.action = data.rowIndex ? 'updateSoal' : 'createSoal'; const result = await postData(data); if (result) { getEl('soalModal').style.display = 'none'; await fetchSoalData(); showAlert(result.message, 'success'); } getEl('saveBtn').disabled = false; }
+    async function fetchSoalData() { getEl('loader-soal').style.display = 'block'; getEl('dataTable').querySelector('tbody').innerHTML = ''; try { const sheetName = getEl('sheetSelector').value; const params = new URLSearchParams({ action: 'read', sheetName: sheetName }); const res = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`); const result = await res.json(); if (result.error) throw new Error(result.error); currentSoalData = result.data; displaySoalData(currentSoalData); } catch (error) { showAlert(`Gagal mengambil data soal: ${error.message}`, 'error'); } finally { getEl('loader-soal').style.display = 'none'; } }
+    function displaySoalData(data) { const tableBody = getEl('dataTable').querySelector('tbody'); const filter = getEl('filterTypeSoal'); const types = ['Semua Tipe', ...new Set(data.map(item => item.TYPE_SOAL).filter(Boolean))]; const currentFilterValue = filter.value || 'Semua Tipe'; const selectedValue = filter.value; filter.innerHTML = types.map(type => `<option value="${type}">${type}</option>`).join(''); filter.value = selectedValue; tableBody.innerHTML = ''; if (!data || data.length === 0) { tableBody.innerHTML = `<tr><td colspan="15" style="text-align:center;">Tidak ada data soal.</td></tr>`; return; } data.forEach((rowData, index) => { if (currentFilterValue === 'Semua Tipe' || rowData.TYPE_SOAL === currentFilterValue) { const row = document.createElement('tr'); row.innerHTML = `<td><button class="edit-btn btn-warning action-btn" data-type="soal" data-index="${index}"><i class="fas fa-pencil-alt"></i></button><button class="delete-btn btn-danger action-btn" data-type="soal" data-index="${index}"><i class="fas fa-trash-alt"></i></button></td><td>${index + 1}</td><td>${rowData.TYPE_SOAL || ''}</td><td>${rowData.PERTANYAAN || ''}</td><td>${rowData.IMAGE_URL || ''}</td><td>${rowData.OPTION1 || ''}</td><td>${rowData.ANSWER1 || ''}</td><td>${rowData.OPTION2 || ''}</td><td>${rowData.ANSWER2 || ''}</td><td>${rowData.OPTION3 || ''}</td><td>${rowData.ANSWER3 || ''}</td><td>${rowData.OPTION4 || ''}</td><td>${rowData.ANSWER4 || ''}</td><td>${rowData.OPTION5 || ''}</td><td>${rowData.ANSWER5 || ''}</td>`; tableBody.appendChild(row); } }); }
+    async function handleDeleteSoal(index) { const rowData = currentSoalData[index]; const confirmed = await showConfirm(`Yakin ingin menghapus soal "${rowData.PERTANYAAN}"?`); if (!confirmed) return; const result = await postData({ action: 'deleteSoal', sheetName: getEl('sheetSelector').value, rowIndex: index + 2 }); if (result) { await fetchSoalData(); showAlert(result.message, 'success'); } }
+
+    function aggregateSiswaData(rawData) { const siswaMap = {}; rawData.forEach(row => { const nisn = row.NISN; if (!nisn) return; if (!siswaMap[nisn]) { siswaMap[nisn] = { ...row, TKA: [] }; } if (row.TKA && !siswaMap[nisn].TKA.includes(row.TKA)) { siswaMap[nisn].TKA.push(row.TKA); } }); return Object.values(siswaMap); }
+    function showPesertaForm(mode = 'add', data = {}) { getEl('pesertaForm').reset(); const nisnInput = getEl('nisn'); const sekolahInput = getEl('sekolah'); sekolahInput.value = adminPermissions.namaSekolah; sekolahInput.disabled = true; document.querySelectorAll('input[name="tka"]').forEach(cb => cb.checked = false); if (mode === 'edit') { getEl('pesertaFormTitle').textContent = `Edit Peserta`; getEl('namaSiswa').value = data.Nama_Siswa; nisnInput.value = data.NISN; nisnInput.disabled = true; if (data.TKA && Array.isArray(data.TKA)) { data.TKA.forEach(tkaValue => { const checkbox = document.querySelector(`input[name="tka"][value="${tkaValue}"]`); if (checkbox) checkbox.checked = true; }); } } else { getEl('pesertaFormTitle').textContent = 'Tambah Peserta Baru'; nisnInput.disabled = false; } getEl('pesertaModal').style.display = 'block'; }
+    function hidePesertaForm() { getEl('pesertaModal').style.display = 'none'; }
+    async function handleSavePeserta(event) { event.preventDefault(); getEl('savePesertaBtn').disabled = true; const selectedTkas = Array.from(document.querySelectorAll('input[name="tka"]:checked')).map(cb => cb.value); const data = { namaSiswa: getEl('namaSiswa').value, nisn: getEl('nisn').value, sekolah: getEl('sekolah').value, sheetName: adminPermissions.sheet, tka: selectedTkas }; const isEditMode = getEl('nisn').disabled; data.action = isEditMode ? 'updateSiswa' : 'createSiswa'; const result = await postData(data); if (result) { hidePesertaForm(); await fetchSiswaData(); showAlert(result.message, 'success'); } getEl('savePesertaBtn').disabled = false; }
+    async function fetchSiswaData() { getEl('loader-peserta').style.display = 'block'; getEl('loader-nilai').style.display = 'block'; try { const params = new URLSearchParams({ action: 'getSiswaBySekolah', sheetName: adminPermissions.sheet, namaSekolah: adminPermissions.namaSekolah }); const res = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`); if (!res.ok) throw new Error(`Network response error: ${res.statusText}`); const result = await res.json(); if (result.error) throw new Error(result.error); currentRawSiswaData = result.data; currentAggregatedSiswaData = aggregateSiswaData(currentRawSiswaData); populateSiswaFilters(); applyAndDisplayFilters(); } catch (error) { showAlert(`Gagal mengambil data peserta: ${error.message}`, 'error'); } finally { getEl('loader-peserta').style.display = 'none'; getEl('loader-nilai').style.display = 'none'; } }
+    function populateSiswaFilters() { const tkaOptions = ['Semua TKA', ...new Set(currentRawSiswaData.map(item => item.TKA).filter(Boolean))]; const tkaPesertaFilter = getEl('filterTkaPeserta'); const tkaNilaiFilter = getEl('filterTkaNilai'); const currentPesertaVal = tkaPesertaFilter.value; const currentNilaiVal = tkaNilaiFilter.value; tkaPesertaFilter.innerHTML = tkaOptions.map(tka => `<option value="${tka === 'Semua TKA' ? '' : tka}">${tka}</option>`).join(''); tkaNilaiFilter.innerHTML = tkaOptions.map(tka => `<option value="${tka === 'Semua TKA' ? '' : tka}">${tka}</option>`).join(''); tkaPesertaFilter.value = currentPesertaVal; tkaNilaiFilter.value = currentNilaiVal; }
+    
+    function applyAndDisplayFilters() {
+        const nameFilterPeserta = getEl('filterNamaSiswa').value.toLowerCase();
+        const tkaFilterPeserta = getEl('filterTkaPeserta').value;
+        const nameFilterNilai = getEl('filterNamaNilai').value.toLowerCase();
+        const tkaFilterNilai = getEl('filterTkaNilai').value;
+
+        const indexedData = currentAggregatedSiswaData.map((data, index) => ({ data: data, originalIndex: index }));
+        let filteredPeserta = indexedData;
+        if (nameFilterPeserta) {
+            filteredPeserta = filteredPeserta.filter(item => item.data.Nama_Siswa.toLowerCase().includes(nameFilterPeserta));
+        }
+        if (tkaFilterPeserta) {
+            filteredPeserta = filteredPeserta.filter(item => item.data.TKA && item.data.TKA.includes(tkaFilterPeserta));
+        }
+        displaySiswaData(filteredPeserta);
+
+        let filteredNilai = currentRawSiswaData;
+        if (nameFilterNilai) {
+            filteredNilai = filteredNilai.filter(item => item.Nama_Siswa.toLowerCase().includes(nameFilterNilai));
+        }
+        if (tkaFilterNilai) {
+            filteredNilai = filteredNilai.filter(item => item.TKA === tkaFilterNilai);
+        }
+        currentFilteredNilaiData = filteredNilai;
+        displayNilaiData(currentFilteredNilaiData);
+    }
+
+    function displaySiswaData(filteredData) { const tableBody = getEl('pesertaTable').querySelector('tbody'); tableBody.innerHTML = ''; if (!filteredData || filteredData.length === 0) { tableBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Tidak ada data peserta yang cocok.</td></tr>`; return; } filteredData.forEach((item, displayIndex) => { const rowData = item.data; const originalIndex = item.originalIndex; const row = document.createElement('tr'); const tkaDisplay = rowData['TKA'] && Array.isArray(rowData['TKA']) ? rowData['TKA'].join(', ') : ''; row.innerHTML = `<td><button class="edit-btn btn-warning action-btn" data-type="peserta" data-index="${originalIndex}"><i class="fas fa-pencil-alt"></i></button><button class="delete-btn btn-danger action-btn" data-type="peserta" data-index="${originalIndex}"><i class="fas fa-user-times"></i></button></td><td>${displayIndex + 1}</td><td>${rowData['Nama_Siswa'] || ''}</td><td>${rowData['NISN'] || ''}</td><td>${rowData['Sekolah'] || ''}</td><td>${tkaDisplay}</td>`; tableBody.appendChild(row); }); }
+    async function handleDeletePeserta(index) { const rowData = currentAggregatedSiswaData[index]; const confirmed = await showConfirm(`Yakin ingin menghapus semua data untuk ${rowData.Nama_Siswa}?`); if (!confirmed) return; const result = await postData({ action: 'deleteSiswa', sheetName: adminPermissions.sheet, nisn: rowData.NISN }); if (result) { await fetchSiswaData(); showAlert(result.message, 'success'); } }
+    function displayNilaiData(data) { const table = getEl('nilaiTable'); table.innerHTML = ''; if (!data || data.length === 0) { table.innerHTML = '<thead><tr><th>Informasi</th></tr></thead><tbody><tr><td>Tidak ada data nilai yang cocok.</td></tr></tbody>'; return; } const baseHeaders = ['Nama_Siswa', 'NISN', 'Sekolah', 'TKA']; const uniqueHeadersFromData = new Set(data.flatMap(row => Object.keys(row))); const scoreHeaders = Array.from(uniqueHeadersFromData).filter(key => !isNaN(key) && key.trim() !== '').sort((a, b) => parseInt(a, 10) - parseInt(b, 10)); const otherHeaders = Array.from(uniqueHeadersFromData).filter(key => isNaN(key) && !baseHeaders.includes(key)); const finalHeaders = [...baseHeaders, ...otherHeaders, ...scoreHeaders]; let headerHtml = '<tr>'; finalHeaders.forEach(header => headerHtml += `<th>${header.replace(/_/g, ' ')}</th>`); headerHtml += '</tr>'; let bodyHtml = ''; data.forEach(rowData => { let rowHtml = '<tr>'; finalHeaders.forEach(header => { const cellValue = rowData[header] !== undefined && rowData[header] !== null ? rowData[header] : ''; rowHtml += `<td>${cellValue}</td>`; }); rowHtml += '</tr>'; bodyHtml += rowHtml; }); table.innerHTML = `<thead>${headerHtml}</thead><tbody>${bodyHtml}</tbody>`; }
+    function switchTemplate(templateName) { activeTemplate = templateName; document.querySelectorAll('.template-content').forEach(el => el.classList.remove('active')); document.getElementById(`${templateName}-content`).classList.add('active'); const buttons = { soal: 'btn-template-soal', peserta: 'btn-template-peserta', nilai: 'btn-template-nilai' }; Object.values(buttons).forEach(id => getEl(id).classList.replace('btn-primary', 'btn-secondary')); getEl(buttons[templateName]).classList.replace('btn-secondary', 'btn-primary'); if (templateName === 'soal') fetchSoalData(); else fetchSiswaData(); }
+    
+    function handleDownloadFormat() {
+        const dataForExcel = currentAggregatedSiswaData.map(siswa => ({
+            "Nama_Siswa": siswa.Nama_Siswa, "NISN": siswa.NISN, "TKA": Array.isArray(siswa.TKA) ? siswa.TKA.join(',') : ''
+        }));
+        const worksheet = XLSX.utils.json_to_sheet(dataForExcel);
+        const colWidths = [{ wch: 30 }, { wch: 20 }, { wch: 40 }];
+        worksheet['!cols'] = colWidths;
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "BangbinSiswa");
+        const fileName = `Data_Peserta_${adminPermissions.namaSekolah.replace(/ /g, '_')}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    }
+    async function handleProcessExcel() {
+        const fileInput = getEl('excelFile'); if (fileInput.files.length === 0) { showAlert('Silakan pilih file Excel terlebih dahulu.', 'error'); return; }
+        const loader = getEl('upload-loader'); const processBtn = getEl('processExcelBtn'); loader.style.display = 'block'; processBtn.disabled = true;
+        const file = fileInput.files[0]; const reader = new FileReader();
+        reader.onload = async function(event) {
+            try {
+                const data = new Uint8Array(event.target.result); const workbook = XLSX.read(data, {type: 'array'});
+                const sheetName = workbook.SheetNames[0]; const worksheet = workbook.Sheets[sheetName];
+                const json = XLSX.utils.sheet_to_json(worksheet);
+                if (json.length === 0) { throw new Error("File Excel kosong atau format tidak sesuai."); }
+                const result = await postData({ action: 'batchCreateSiswa', sheetName: adminPermissions.sheet, sekolah: adminPermissions.namaSekolah, siswa: json });
+                if (result) { getEl('uploadModal').style.display = 'none'; await fetchSiswaData(); showAlert(result.message, 'success'); }
+            } catch (error) { showAlert(`Gagal memproses file: ${error.message}`, 'error'); } finally { loader.style.display = 'none'; processBtn.disabled = false; fileInput.value = ''; }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    // FUNGSI DIPERBARUI: Mengunduh data nilai dengan format lengkap
+    function handleDownloadNilai() {
+        const data = currentFilteredNilaiData;
+        if (!data || data.length === 0) {
+            showAlert('Tidak ada data nilai untuk diunduh. Silakan sesuaikan filter Anda.', 'info');
+            return;
+        }
+
+        // 1. Tentukan urutan header secara spesifik
+        const keyOrder = ['Nama_Siswa', 'NISN', 'Sekolah', 'TKA', 'Skor_Akhir'];
+        const displayHeaders = ['Nama Siswa', 'NISN', 'Sekolah', 'TKA', 'Skor Akhir'];
+        
+        // 2. Kumpulkan semua nomor butir soal yang ada nilainya
+        const scoredQuestionHeaders = new Set();
+        data.forEach(row => {
+            Object.keys(row).forEach(key => {
+                if (!isNaN(key) && key.trim() !== '') {
+                    scoredQuestionHeaders.add(key);
+                }
+            });
+        });
+        const sortedQuestionKeys = Array.from(scoredQuestionHeaders).sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
+
+        // Gabungkan semua header
+        const finalKeys = [...keyOrder, ...sortedQuestionKeys];
+        const finalDisplayHeaders = [...displayHeaders, ...sortedQuestionKeys];
+        
+        // 3. Siapkan data untuk Excel, dimulai dengan Judul Laporan
+        const tkaFilter = getEl('filterTkaNilai').value || 'Semua';
+        const dataForSheet = [
+            ["LAPORAN DATA NILAI SISWA"],
+            [`TKA: ${tkaFilter}`],
+            [`Sekolah: ${adminPermissions.namaSekolah}`],
+            [`Tanggal Unduh: ${new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' })}`],
+            [], // Baris kosong sebagai jarak
+            finalDisplayHeaders // Header tabel
+        ];
+
+        // 4. Tambahkan baris data siswa sesuai urutan header
+        data.forEach(row => {
+            const newRow = [];
+            finalKeys.forEach(key => {
+                newRow.push(row[key] !== undefined && row[key] !== null ? row[key] : '');
+            });
+            dataForSheet.push(newRow);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(dataForSheet);
+
+        // 5. Atur lebar kolom
+        const colWidths = [
+            { wch: 30 }, // Nama Siswa
+            { wch: 18 }, // NISN
+            { wch: 25 }, // Sekolah
+            { wch: 12 }, // TKA
+            { wch: 12 }, // Skor Akhir
+        ];
+        // Tambahkan lebar untuk setiap kolom butir soal
+        sortedQuestionKeys.forEach(() => colWidths.push({ wch: 8 }));
+        worksheet['!cols'] = colWidths;
+
+        // 6. Gabungkan sel untuk judul
+        worksheet['!merges'] = [
+            { s: { r: 0, c: 0 }, e: { r: 0, c: finalDisplayHeaders.length - 1 } },
+            { s: { r: 1, c: 0 }, e: { r: 1, c: finalDisplayHeaders.length - 1 } },
+            { s: { r: 2, c: 0 }, e: { r: 2, c: finalDisplayHeaders.length - 1 } },
+            { s: { r: 3, c: 0 }, e: { r: 3, c: finalDisplayHeaders.length - 1 } }
+        ];
+
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "BangbinNilai");
+        const fileName = `Data_Nilai_${adminPermissions.namaSekolah.replace(/ /g, '_')}_${tkaFilter}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
+    }
+
+    function initializeAppEventListeners() {
+        getEl('btn-template-soal').addEventListener('click', () => switchTemplate('soal'));
+        getEl('btn-template-peserta').addEventListener('click', () => switchTemplate('peserta'));
+        getEl('btn-template-nilai').addEventListener('click', () => switchTemplate('nilai'));
+        getEl('sheetSelector').addEventListener('change', fetchSoalData);
+		getEl('filterTypeSoal').addEventListener('change', () => displaySoalData(currentSoalData));
+        getEl('showFormBtn').addEventListener('click', () => showSoalForm('add'));
+        getEl('soalForm').addEventListener('submit', handleSaveSoal);
+        getEl('typeSoal').addEventListener('change', () => updateFormUI(getEl('typeSoal').value));
+        getEl('cancelBtn').addEventListener('click', () => getEl('soalModal').style.display = 'none');
+        getEl('mainFormCloseBtn').addEventListener('click', () => getEl('soalModal').style.display = 'none');
+        getEl('dataTable').addEventListener('click', e => { const btn = e.target.closest('.action-btn[data-type="soal"]'); if (!btn) return; const index = parseInt(btn.dataset.index); if (btn.classList.contains('edit-btn')) showSoalForm('edit', currentSoalData[index], index); if (btn.classList.contains('delete-btn')) handleDeleteSoal(index); });
+        getEl('showPesertaFormBtn').addEventListener('click', () => showPesertaForm('add'));
+        getEl('pesertaForm').addEventListener('submit', handleSavePeserta);
+        getEl('pesertaTable').addEventListener('click', e => { const btn = e.target.closest('.action-btn[data-type="peserta"]'); if (!btn) return; const index = parseInt(btn.dataset.index); if (btn.classList.contains('edit-btn')) showSoalForm('edit', currentAggregatedSiswaData[index]); if (btn.classList.contains('delete-btn')) handleDeletePeserta(index); });
+        getEl('cancelPesertaBtn').addEventListener('click', hidePesertaForm);
+        getEl('pesertaFormCloseBtn').addEventListener('click', hidePesertaForm);
+        getEl('refreshNilaiBtn').addEventListener('click', fetchSiswaData);
+        getEl('downloadNilaiBtn').addEventListener('click', handleDownloadNilai);
+        getEl('filterNamaSiswa').addEventListener('input', applyAndDisplayFilters);
+        getEl('filterTkaPeserta').addEventListener('change', applyAndDisplayFilters);
+        getEl('filterNamaNilai').addEventListener('input', applyAndDisplayFilters);
+        getEl('filterTkaNilai').addEventListener('change', applyAndDisplayFilters);
+        getEl('showUploadModalBtn').addEventListener('click', () => getEl('uploadModal').style.display = 'block');
+        getEl('uploadModalCloseBtn').addEventListener('click', () => getEl('uploadModal').style.display = 'none');
+        getEl('cancelUploadBtn').addEventListener('click', () => getEl('uploadModal').style.display = 'none');
+        getEl('downloadFormatBtn').addEventListener('click', handleDownloadFormat);
+        getEl('processExcelBtn').addEventListener('click', handleProcessExcel);
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordForm = getEl('password-form');
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const submitButton = passwordForm.querySelector('button');
+            submitButton.disabled = true;
+            const result = await postData({ action: 'adminLogin', username: getEl('username-input').value, password: getEl('password-input').value });
+            if (result && result.success) {
+                getEl('password-modal').style.display = 'none';
+                adminPermissions.sheet = result.sheet;
+                adminPermissions.namaSekolah = result.namaSekolah;
+                getEl('main-container').style.display = 'block';
+                getEl('welcome-message').textContent = `Selamat Datang, Admin ${adminPermissions.namaSekolah}!`;
+                getEl('sheet-peserta-name').textContent = adminPermissions.sheet;
+                getEl('sheet-nilai-name').textContent = adminPermissions.sheet;
+                initializeAppEventListeners();
+                fetchSoalData();
+            } else {
+                getEl('password-error').textContent = result ? result.message : 'Login Gagal!';
+                submitButton.disabled = false;
+            }
+        });
+    });
+</script>
+</body>
+
+</html>

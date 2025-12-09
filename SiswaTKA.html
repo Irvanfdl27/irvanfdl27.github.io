@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TKA-2025</title>
+    <link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/d/1_4llqCMNoBDmwDHsI7RYsCM6rSK5wEjw">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+
+    <style>
+        :root {
+            --bg-light: #F7F8FA;
+            --container-bg: #FFFFFF;
+            --accent: #1ABC9C; /* Teal */
+            --accent-hover: #16A085;
+            --text-title: #2C3E50;
+            --text-body: #34495E;
+            --border-color: #EAECEF;
+            --correct: #2ECC71;
+            --wrong: #E74C3C;
+            --flagged: #F1C40F;
+            /* WARNA BARU UNTUK SERTIFIKAT */
+            --cert-gold: #B9975B;
+            --cert-dark-blue: #1F3A5A;
+            --cert-background: #FDFBF6;
+        }
+        *, *::before, *::after { box-sizing: border-box; }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-light); color: var(--text-body); margin: 0; padding: 20px; display: flex; justify-content: center; align-items: flex-start; min-height: 100vh; }
+        .hidden { display: none !important; }
+        .quiz-container { width: 100%; max-width: 1200px; background: var(--container-bg); border-radius: 16px; box-shadow: 0 8px 40px rgba(44, 62, 80, 0.1); overflow: hidden; }
+        .page { padding: 40px; }
+        h1, h2, h3 { color: var(--text-title); text-align: center; font-weight: 700; }
+        p { line-height: 1.7; }
+        label { font-weight: 600; margin-bottom: 8px; display: block; font-size: 14px; }
+        input[type="text"], select { width: 100%; padding: 14px; margin-bottom: 25px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-light); color: var(--text-body); font-size: 16px; font-family: 'Montserrat', sans-serif; transition: border-color 0.3s, box-shadow 0.3s; }
+        input[type="text"]:focus, select:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(26, 188, 156, 0.2); }
+        
+        .btn {
+            display: inline-block;
+            background-color: var(--accent);
+            color: white;
+            padding: 14px 15px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 300;
+            text-decoration: none;
+            text-align: center;
+            transition: all 0.2s ease-out;
+            box-shadow: 0 4px 6px rgba(50, 50, 93, 0.11), 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .btn:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(50, 50, 93, 0.1), 0 3px 6px rgba(0, 0, 0, 0.08);
+        }
+        .btn:active {
+            transform: translateY(1px);
+            box-shadow: 0 2px 4px rgba(50, 50, 93, 0.1), 0 1px 2px rgba(0, 0, 0, 0.07);
+        }
+        .btn:disabled {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+            opacity: 0.7;
+        }
+        .btn-secondary {
+            background-color: #bdc3c7;
+            color: var(--text-title);
+        }
+        .btn-secondary:hover {
+            background-color: #95a5a6;
+        }
+
+        .btn-icon {
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        /* === PENAMBAHAN CSS UNTUK FOOTER HALAMAN START === */
+        .start-page-footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+        .whatsapp-link {
+            text-decoration: none;
+            color: #25D366; /* Warna Hijau WhatsApp */
+            font-size: 30px;
+            font-weight: 600;
+            transition: opacity 0.2s;
+        }
+        .whatsapp-link:hover {
+            color: #128C7E;
+        }
+        .whatsapp-link .fa-whatsapp {
+            font-size: 40px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+        /* ============================================= */
+
+        .quiz-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 30px; }
+        .timer { font-size: 22px; font-weight: 700; color: var(--text-title); background-color: #fbebed; border: 1px solid #e74c3c; padding: 8px 18px; border-radius: 8px; }
+        .quiz-body { display: flex; flex-wrap: wrap; gap: 40px; }
+        .question-display { flex: 3; min-width: 350px; }
+        .nav-panel { flex: 1; border-left: 1px solid var(--border-color); padding-left: 40px; min-width: 250px; }
+        .question-image { margin-bottom: 20px; text-align: center; }
+        .question-image img { max-width: 100%; max-height: 400px; border-radius: 8px; }
+        .question-text { font-size: 18px; line-height: 1.7; margin-bottom: 25px; color: var(--text-title); }
+        .option-label { display: flex; align-items: center; gap: 15px; background: #fdfdfd; padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: all 0.2s; }
+        .option-label:hover { border-color: var(--accent); background-color: #f7fefc; }
+        .nav-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(45px, 1fr)); gap: 12px; }
+        .nav-btn { width: 45px; height: 45px; border: 1px solid var(--border-color); background: var(--container-bg); color: var(--text-body); cursor: pointer; font-weight: 600; border-radius: 8px; transition: all 0.2s; }
+        .nav-btn.answered { background-color: var(--correct); border-color: var(--correct); color: white; }
+        .nav-btn.flagged { box-shadow: 0 0 0 3px var(--flagged); }
+        .nav-btn.current { background-color: var(--accent); border-color: var(--accent); color: white; transform: scale(1.1); }
+        .quiz-footer { margin-top: 30px; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border-color); padding-top: 30px; }
+        .bs-statement-row { padding: 15px; border: 1px solid var(--border-color); border-radius: 8px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .bs-choice-btn { padding: 8px 16px; border: 1px solid #bdc3c7; border-radius: 6px; cursor: pointer; }
+        .bs-choice-btn.selected { background-color: var(--accent); color: white; border-color: var(--accent); }
+        .matching-container { display: flex; gap: 20px; }
+        .matching-column { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .matching-card { padding: 15px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; transition: all 0.2s; }
+        .matching-card.selected { border-color: var(--accent); background-color: #f7fefc; transform: scale(1.03); box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
+        .matching-card.paired { opacity: 0.5; cursor: not-allowed; background-color: var(--border-color); }
+        .result-page-container { text-align: center; }
+        .review-block { text-align: left; margin-top: 20px; padding: 15px; border-radius: 8px; border-left: 5px solid; }
+        .review-block.correct { background-color: #eaf8f1; border-color: var(--correct); }
+        .review-block.wrong { background-color: #fbebed; border-color: var(--wrong); }
+        .review-block p b { color: var(--text-title); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44, 62, 80, 0.7); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 1000; animation: modal-fade-in 0.3s; }
+        .modal-content { background: var(--container-bg); padding: 40px; border-radius: 12px; text-align: center; max-width: 450px; width: 100%; animation: modal-pop-in 0.3s ease-out forwards; }
+        .modal-buttons { margin-top: 30px; display: flex; justify-content: center; gap: 15px; }
+        @keyframes modal-fade-in { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes modal-pop-in { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+        #certificate-container { display: none; }
+        @media print {
+            @page { size: A4 landscape; margin: 0; }
+            body * { visibility: hidden; }
+            #certificate-container, #certificate-container * { visibility: visible; }
+            #certificate-container {
+                display: flex !important; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+                position: fixed; top: 0; left: 0; width: 100%; height: 100%; box-sizing: border-box; padding: 1.5cm;
+                background-color: var(--cert-background); color: var(--cert-dark-blue); font-family: 'Montserrat', sans-serif;
+            }
+            .cert-content-wrapper { width: 100%; height: 100%; position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; z-index: 2; }
+            .cert-border { position: absolute; top: 1cm; bottom: 1cm; left: 1cm; right: 1cm; border: 3px solid var(--cert-dark-blue); outline: 1px solid var(--cert-gold); outline-offset: 6px; background: white; z-index: 1; }
+            #cert-icon { width: 70px; height: 70px; margin-bottom: 10px; }
+            #cert-title { font-family: 'Cinzel Decorative', cursive; font-size: 2.8em; font-weight: 700; color: var(--cert-dark-blue); margin: 0; }
+            #cert-subtitle { font-size: 1em; color: var(--cert-gold); text-transform: uppercase; letter-spacing: 3px; margin: 5px 0 25px 0; }
+            #cert-recipient-intro { font-size: 1em; font-weight: 500; margin: 0; }
+            #cert-student-name { font-family: 'Cinzel Decorative', cursive; font-weight: 700; font-size: 2.2em; color: var(--cert-gold); margin: 10px 0; }
+            #cert-school-name { font-size: 1em; margin-top: 5px; }
+            #cert-bodytext { font-size: 0.9em; max-width: 65%; margin: 25px auto 15px auto; line-height: 1.6; }
+            #cert-score-predicate { font-size: 1.1em; font-weight: 700; }
+            .cert-footer { width: 100%; position: absolute; bottom: 2cm; left: 0; padding: 0 2cm; box-sizing: border-box; display: flex; justify-content: flex-end; }
+            .cert-signature-block { width: 40%; text-align: center; }
+            .signature-line { border-top: 1px solid var(--cert-dark-blue); margin-top: 50px; padding-top: 5px; font-size: 0.9em; font-weight: bold; }
+            .signature-title { font-size: 0.8em; }
+        }
+    </style>
+</head>
+<body>
+    <main class="quiz-container">
+        <div id="start-page" class="page">
+            <h1>Ujian Online</h1>
+            <p style="text-align:center;">Silakan isi data diri Anda untuk memulai.</p>
+            <form id="start-form">
+                <div><label for="namaLengkap">Nama Lengkap</label><input type="text" id="namaLengkap" required></div>
+                <div><label for="namaSekolah">Nama Sekolah</label><input type="text" id="namaSekolah" required></div>
+                <div><label for="sheetSelector">Pilih Ujian</label>
+                    <select id="sheetSelector">
+                        <option value="TKA1">TKA 1</option><option value="TKA2">TKA 2</option><option value="TKA3">TKA 3</option><option value="TKA4">TKA 4</option><option value="TKA5">TKA 5</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn" style="width:50%;">Mulai Ujian</button>
+                    <a href="Admin_TKA" class="btn" type="submit" style="width:50%; background-color: var(--text-body);">Admin</a>
+                </div>
+
+                <div class="start-page-footer">
+                    <a href="https://wa.me/6281310051985" target="_blank" class="whatsapp-link"><i class="fa fa-whatsapp"></i></a>
+                </div>
+                </form>
+        </div>
+
+        <div id="quiz-page" class="page hidden">
+             <header class="quiz-header">
+                 <div><strong id="studentNameDisplay"></strong><br><span id="schoolNameDisplay"></span></div>
+                 <div id="timer" class="timer">90:00</div>
+             </header>
+             <div class="quiz-body">
+                 <section class="question-display"><div id="question-area"></div></section>
+                 <aside class="nav-panel"><h2>Navigasi Soal</h2><div id="nav-grid"></div></aside>
+             </div>
+             <footer class="quiz-footer">
+                <div>
+                    <button id="prevBtn" class="btn btn-icon btn-secondary" aria-label="Soal Sebelumnya">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 20 20" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12l4.58-4.59z"/></svg>
+                    </button>
+                    <button id="nextBtn" class="btn btn-icon" style="margin-left:10px;" aria-label="Soal Berikutnya">
+                        <svg xmlns="http://www.w3.org/2000/svg" height="20px" viewBox="0 0 20 20" width="24px" fill="currentColor"><path d="M0 0h24v24H0V0z" fill="none"/><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6-6-6z"/></svg>
+                    </button>
+                </div>
+                 <div>
+                    <label style="display:inline-flex; align-items:center; gap:8px;">
+                        <input type="checkbox" id="flagCheck" style="width: 18px; height: 18px;"> Ragu
+                    </label>
+                    <button id="submitBtn" class="btn" style="background-color: var(--correct); margin-left:10px;">Selesai</button>
+                </div>
+             </footer>
+        </div>
+
+        <div id="result-page" class="page hidden">
+            <div class="result-page-container">
+                <div id="score-container">
+                    <h2>Ujian Selesai</h2>
+                    <p>Skor akhir Anda adalah:</p>
+                    <div id="score" style="font-size:3.5em; font-weight:700; color:var(--accent); margin: 20px 0;"></div>
+                    <p id="predicate" style="font-size: 1.5em; font-weight: 600; margin-top: -10px;"></p>
+                    <button id="show-review-btn" class="btn" style="margin-top: 20px;">Lihat Pembahasan</button>
+                    <button id="print-cert-btn" class="btn" style="margin-top: 20px; margin-left: 10px; background-color: var(--correct);">🖨️ Cetak Sertifikat</button>
+                </div>
+                <div id="review-container" class="hidden">
+                    <h3>Pembahasan</h3>
+                    <div id="review-area"></div>
+                    <button id="reset-quiz-btn" class="btn btn-secondary" style="margin-top: 30px;">Kembali ke Awal</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="certificate-container">
+            <div class="cert-border"></div>
+            <div class="cert-content-wrapper">
+                <header>
+                    <img id="cert-icon" src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0iIzE5MzU1NSI+PHBhdGggZD0iTTEyIDNMMi41IDEwbDkuNSA2IDkuNS02TDEyIDN6bTAgNC41bDUuNSA0LjVMMTIgMTVsLTUuNS00LjVMMTIgNy41ek0yIDExdjhsMTAgNnYtMi4wOWwtOCA0LjgxVjExSDJ6bTIwIDB2Ni4xMWwtOCA0LjgxVjE5bDEwLTYgdi04aC0yek00IDIwdi0yYzAtMS4xLjktMiAyLTJoMTRjMS4xIDAgMiAuOSAyIDJ2MmgtMTh6Ii8+PC9zdmc+" alt="Wisuda Icon" />
+                    <h1 id="cert-title">SERTIFIKAT KELULUSAN</h1>
+                    <p id="cert-subtitle">Certificate of Completion</p>
+                </header>
+                <main>
+                    <p id="cert-recipient-intro">Dengan ini diberikan kepada:</p>
+                    <h2 id="cert-student-name">[Nama Siswa]</h2>
+                    <p id="cert-school-name">dari [Nama Sekolah]</p>
+                    <p id="cert-bodytext">Telah berhasil menyelesaikan Ujian Online yang diselenggarakan oleh Bangbin Education.</p>
+                    <p id="cert-score-predicate">
+                        SKOR AKHIR: <b id="cert-score" style="color:var(--cert-gold);">0</b> | 
+                        PREDIKAT: <b id="cert-predicate">-</b>
+                    </p>
+                </main>
+            </div>
+            <footer class="cert-footer">
+                 <div class="cert-signature-block">
+                     <p id="cert-date">[Tanggal]</p>
+                     <p class="signature-line">BANGBIN EDUCATION</p>
+                     <p class="signature-title">Kepala Institusi</p>
+                 </div>
+            </footer>
+        </div>
+    </main>
+    
+    <div id="customModal" class="modal-overlay hidden">
+        <div class="modal-content"><h3 id="modal-title"></h3><p id="modal-text"></p><div class="modal-buttons"><button id="modal-cancel-btn" class="btn btn-secondary"></button><button id="modal-confirm-btn" class="btn"></button></div></div>
+    </div>
+
+<script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzq2I4VIXFBE5ubdyB0nZ7IYztveZQqkYiX2XFj3aTWy5fGHU2IL8EQ3I47T1Fy4_wY/exec';
+    
+    let questions = [], userAnswers = [], currentQuestionIndex = 0, timerInterval;
+    const startPage = document.getElementById('start-page'), quizPage = document.getElementById('quiz-page'), resultPage = document.getElementById('result-page'), customModal = document.getElementById('customModal');
+    const scoreContainer = document.getElementById('score-container'), reviewContainer = document.getElementById('review-container');
+
+    function showModal(title, text, confirmText = "OK", cancelText = null) {
+        return new Promise(resolve => {
+            customModal.querySelector('#modal-title').textContent = title;
+            customModal.querySelector('#modal-text').textContent = text;
+            const confirmBtn = customModal.querySelector('#modal-confirm-btn');
+            const cancelBtn = customModal.querySelector('#modal-cancel-btn');
+            confirmBtn.textContent = confirmText;
+            confirmBtn.onclick = () => { customModal.classList.add('hidden'); resolve(true); };
+            if (cancelText) {
+                cancelBtn.style.display = 'inline-block';
+                cancelBtn.textContent = cancelText;
+                cancelBtn.onclick = () => { customModal.classList.add('hidden'); resolve(false); };
+            } else {
+                cancelBtn.style.display = 'none';
+            }
+            customModal.classList.remove('hidden');
+        });
+    }
+
+    function renderContent(text) {
+        if (typeof text !== 'string') return '';
+        const trimmedText = text.trim();
+        if (trimmedText.startsWith('http://') || trimmedText.startsWith('https://')) {
+            return `<div class="question-image"><img src="${trimmedText}" alt="Konten Soal"></div>`;
+        }
+        return trimmedText;
+    }
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    async function loadQuiz(sheetName) {
+        document.getElementById('question-area').innerHTML = '<h3>Memuat soal...</h3>';
+        try {
+            const res = await fetch(`${APPS_SCRIPT_URL}?action=read&sheetName=${sheetName}`);
+            const result = await res.json();
+            if (result.error) throw new Error(result.error);
+            questions = result.data.filter(q => q.PERTANYAAN);
+            shuffleArray(questions); 
+            userAnswers = questions.map(() => ({ answer: null, isFlagged: false }));
+            renderNavPanel();
+            showQuestion(0);
+            startTimer(90 * 60, document.getElementById('timer'));
+        } catch (error) {
+            showModal('Error', `Gagal memuat soal: ${error.message}`);
+        }
+    }
+
+    function showQuestion(index) {
+        if (index < 0 || index >= questions.length) return;
+        saveCurrentAnswer();
+        currentQuestionIndex = index;
+        const q = questions[index];
+        const questionArea = document.getElementById('question-area');
+        let questionHtml = '', optionsHtml = '';
+        if (q.IMAGE_URL) questionHtml += renderContent(q.IMAGE_URL);
+        questionHtml += `<div class="question-text">${index + 1}. ${renderContent(q.PERTANYAAN)}</div>`;
+        switch (String(q.TYPE_SOAL).trim()) {
+            case 'pilihan-ganda': case 'pilihan-ganda-kompleks':
+                const inputType = q.TYPE_SOAL.trim() === 'pilihan-ganda' ? 'radio' : 'checkbox';
+                let options = [];
+                for (let i = 1; i <= 5; i++) if (q[`OPTION${i}`]) options.push(q[`OPTION${i}`]);
+                shuffleArray(options); 
+                options.forEach(optionText => { optionsHtml += `<label class="option-label"><input type="${inputType}" name="q_option" value="${optionText}"> <div>${renderContent(optionText)}</div></label>`; });
+                break;
+            case 'benar-salah':
+                for (let i = 1; i <= 5; i++) if (q[`OPTION${i}`]) optionsHtml += `<div class="bs-statement-row" data-statement-id="${i}"><div class="statement-text">${renderContent(q[`OPTION${i}`])}</div><div class="statement-choices"><span class="bs-choice-btn" data-choice="Benar">Benar</span><span class="bs-choice-btn" style="margin-left: 8px;" data-choice="Salah">Salah</span></div></div>`;
+                break;
+            case 'menjodohkan':
+                let pairs = [];
+                for(let i=1; i<=5; i++) if (q[`OPTION${i}`] && q[`ANSWER${i}`]) pairs.push({ soal: q[`OPTION${i}`], jodoh: q[`ANSWER${i}`] });
+                let soalCards = pairs.map(p => p.soal), jodohCards = pairs.map(p => p.jodoh);
+                shuffleArray(soalCards); shuffleArray(jodohCards);
+                optionsHtml = `<div class="matching-container"><div class="matching-column" id="matching-soal-col">${soalCards.map((s, i) => `<div class="matching-card" data-value="${s}" data-pair-id="pair-${i}">${renderContent(s)}</div>`).join('')}</div><div class="matching-column" id="matching-jodoh-col">${jodohCards.map((j, i) => `<div class="matching-card" data-value="${j}" data-pair-id="pair-${i}">${renderContent(j)}</div>`).join('')}</div></div>`;
+                break;
+        }
+        questionArea.innerHTML = questionHtml + `<div>${optionsHtml}</div>`;
+        addOptionListeners(); restoreAnswer(); updateNavStatus(); updateFooter();
+    }
+
+    function addOptionListeners() {
+        const q = questions[currentQuestionIndex];
+        if (!q) return;
+        const type = String(q.TYPE_SOAL).trim();
+
+        if (type === 'benar-salah') {
+            document.querySelectorAll('.bs-choice-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const parentRow = e.target.closest('.bs-statement-row');
+                    parentRow.querySelectorAll('.bs-choice-btn').forEach(b => b.classList.remove('selected'));
+                    e.target.classList.add('selected');
+                });
+            });
+        } else if (type === 'menjodohkan') {
+            const soalCol = document.getElementById('matching-soal-col');
+            const jodohCol = document.getElementById('matching-jodoh-col');
+            let selectedSoal = null;
+            let selectedJodoh = null;
+
+            soalCol.querySelectorAll('.matching-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('paired')) return;
+                    if (card.classList.contains('selected')) {
+                        card.classList.remove('selected');
+                        selectedSoal = null;
+                    } else {
+                        if (selectedSoal) selectedSoal.classList.remove('selected');
+                        card.classList.add('selected');
+                        selectedSoal = card;
+                    }
+                    if (selectedSoal && selectedJodoh) pairCards(selectedSoal, selectedJodoh);
+                });
+            });
+
+            jodohCol.querySelectorAll('.matching-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    if (card.classList.contains('paired')) return;
+                    if (card.classList.contains('selected')) {
+                        card.classList.remove('selected');
+                        selectedJodoh = null;
+                    } else {
+                        if (selectedJodoh) selectedJodoh.classList.remove('selected');
+                        card.classList.add('selected');
+                        selectedJodoh = card;
+                    }
+                    if (selectedSoal && selectedJodoh) pairCards(selectedSoal, selectedJodoh);
+                });
+            });
+
+            const pairCards = (soal, jodoh) => {
+                soal.classList.remove('selected');
+                jodoh.classList.remove('selected');
+                soal.classList.add('paired');
+                jodoh.classList.add('paired');
+                const pairId = `paired-${Date.now()}-${Math.random()}`;
+                soal.dataset.pairId = pairId;
+                jodoh.dataset.pairId = pairId;
+                selectedSoal = null;
+                selectedJodoh = null;
+            };
+        }
+    }
+    
+    function saveCurrentAnswer() {
+        if (!questions[currentQuestionIndex]) return;
+        const q = questions[currentQuestionIndex];
+        let answerData = null;
+        const type = String(q.TYPE_SOAL).trim();
+
+        if (type === 'pilihan-ganda' || type === 'pilihan-ganda-kompleks') {
+            const checked = Array.from(document.querySelectorAll('input[name="q_option"]:checked')).map(el => el.value);
+            if (checked.length > 0) answerData = checked;
+        } else if (type === 'benar-salah') {
+            const bsAnswers = {}; let bsAnswered = false;
+            document.querySelectorAll(".bs-statement-row").forEach(row => {
+                const statementId = row.dataset.statementId;
+                const selectedBtn = row.querySelector(".bs-choice-btn.selected");
+                if (selectedBtn) { bsAnswers[statementId] = selectedBtn.dataset.choice; bsAnswered = true; }
+            });
+            if (bsAnswered) answerData = bsAnswers;
+        } else if (type === 'menjodohkan') {
+            const mjAnswers = [];
+            const soalCards = document.querySelectorAll("#matching-soal-col .matching-card.paired");
+            soalCards.forEach(soalCard => {
+                const pairId = soalCard.dataset.pairId;
+                const jodohCard = document.querySelector(`#matching-jodoh-col .matching-card[data-pair-id="${pairId}"]`);
+                if (jodohCard) {
+                    mjAnswers.push({ soal: soalCard.dataset.value, jodoh: jodohCard.dataset.value });
+                }
+            });
+            if (mjAnswers.length > 0) answerData = mjAnswers;
+        }
+        userAnswers[currentQuestionIndex].answer = answerData;
+    }
+    
+    function restoreAnswer() {
+        if (!userAnswers[currentQuestionIndex] || userAnswers[currentQuestionIndex].answer === null) return;
+        const savedAnswer = userAnswers[currentQuestionIndex].answer;
+        const q = questions[currentQuestionIndex];
+        const type = String(q.TYPE_SOAL).trim();
+        
+        if (type === 'pilihan-ganda' || type === 'pilihan-ganda-kompleks') {
+            document.querySelectorAll('input[name="q_option"]').forEach(input => { if (savedAnswer.includes(input.value)) input.checked = true; });
+        } else if (type === 'benar-salah') {
+            for (const statementId in savedAnswer) {
+                const row = document.querySelector(`.bs-statement-row[data-statement-id="${statementId}"]`);
+                if (row) { row.querySelector(`.bs-choice-btn[data-choice="${savedAnswer[statementId]}"]`)?.classList.add("selected"); }
+            }
+        }
+    }
+
+    function checkAnswer(question, userAnswer) {
+        if (userAnswer === null || userAnswer === undefined) return false;
+        const type = String(question.TYPE_SOAL).trim();
+
+        if (type === 'pilihan-ganda') {
+            let correctAnswer = '';
+            for (let i = 1; i <= 5; i++) {
+                if (question[`ANSWER${i}`]) {
+                    correctAnswer = question[`ANSWER${i}`];
+                    break;
+                }
+            }
+            return userAnswer.length === 1 && userAnswer[0] === correctAnswer;
+        }
+        
+        if (type === 'pilihan-ganda-kompleks') {
+            const correctAnswers = [];
+            for (let i = 1; i <= 5; i++) {
+                if (question[`ANSWER${i}`]) {
+                    correctAnswers.push(question[`OPTION${i}`]);
+                }
+            }
+            if (!Array.isArray(userAnswer) || userAnswer.length !== correctAnswers.length) return false;
+            return [...userAnswer].sort().toString() === [...correctAnswers].sort().toString();
+        }
+
+        if (type === 'benar-salah') {
+            let allCorrect = true;
+            let statementCount = 0;
+            for(let i = 1; i <= 5; i++) {
+                if(question[`OPTION${i}`]) {
+                    statementCount++;
+                    if (!userAnswer || !userAnswer[i] || userAnswer[i] !== question[`ANSWER${i}`]) {
+                        allCorrect = false;
+                    }
+                }
+            }
+            if (!userAnswer || Object.keys(userAnswer).length < statementCount) allCorrect = false;
+            return allCorrect;
+        }
+
+        if (type === 'menjodohkan') {
+            const correctPairs = [];
+            for(let i = 1; i <= 5; i++) {
+                if (question[`OPTION${i}`] && question[`ANSWER${i}`]) {
+                    correctPairs.push({ soal: question[`OPTION${i}`], jodoh: question[`ANSWER${i}`] });
+                }
+            }
+            if (!Array.isArray(userAnswer) || userAnswer.length !== correctPairs.length) return false;
+            const sortedUserPairs = [...userAnswer].sort((a, b) => a.soal.localeCompare(b.soal));
+            const sortedCorrectPairs = [...correctPairs].sort((a, b) => a.soal.localeCompare(b.soal));
+            return JSON.stringify(sortedUserPairs) === JSON.stringify(sortedCorrectPairs);
+        }
+        return false;
+    }
+    
+    function submitQuiz() {
+        saveCurrentAnswer();
+        let correctCount = 0;
+        questions.forEach((q, index) => {
+            if (checkAnswer(q, userAnswers[index].answer)) {
+                correctCount++;
+            }
+        });
+        
+        const finalScore = questions.length > 0 ? Math.round((correctCount / questions.length) * 100) : 0;
+        let predicateText = 'Perlu Belajar Lagi';
+        if (finalScore > 85) predicateText = 'Sangat Baik';
+        else if (finalScore > 70) predicateText = 'Baik';
+        else if (finalScore > 55) predicateText = 'Cukup';
+
+        document.getElementById('score').textContent = finalScore;
+        document.getElementById('predicate').textContent = `Predikat: ${predicateText}`;
+        
+        const studentName = document.getElementById('studentNameDisplay').textContent;
+        const schoolName = document.getElementById('schoolNameDisplay').textContent;
+        const today = new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
+        
+        document.getElementById('cert-student-name').textContent = studentName;
+        document.getElementById('cert-school-name').textContent = `dari ${schoolName}`;
+        document.getElementById('cert-score').textContent = finalScore;
+        document.getElementById('cert-predicate').textContent = predicateText.toUpperCase();
+        document.getElementById('cert-date').textContent = today;
+        
+        quizPage.classList.add('hidden');
+        resultPage.classList.remove('hidden');
+        scoreContainer.classList.remove('hidden');
+        reviewContainer.classList.add('hidden');
+    }
+
+    function renderReview() {
+        const reviewArea = document.getElementById('review-area');
+        reviewArea.innerHTML = '';
+        questions.forEach((q, index) => {
+            let questionContent = q.IMAGE_URL ? renderContent(q.IMAGE_URL) : '';
+            questionContent += `<div class="question-text">${index + 1}. ${renderContent(q.PERTANYAAN)}</div>`;
+            const userAnswer = userAnswers[index].answer;
+            const isCorrect = checkAnswer(q, userAnswer);
+            let correctAnswerHTML = '';
+
+            if (!isCorrect) {
+                 const type = String(q.TYPE_SOAL).trim();
+                if (type === 'pilihan-ganda') {
+                    let correctAnswerText = 'N/A';
+                    for (let i = 1; i <= 5; i++) {
+                        if (q[`ANSWER${i}`]) {
+                            correctAnswerText = q[`ANSWER${i}`];
+                            break;
+                        }
+                    }
+                    correctAnswerHTML = `<p>Jawaban Benar: <b>${correctAnswerText}</b></p>`;
+                } else if (type === 'pilihan-ganda-kompleks') {
+                    const correctAnswers = [];
+                    for (let i = 1; i <= 5; i++) {
+                        if (q[`ANSWER${i}`]) correctAnswers.push(q[`OPTION${i}`]);
+                    }
+                    correctAnswerHTML = `<p>Jawaban Benar: <b>${correctAnswers.join(', ')}</b></p>`;
+                } else if (type === 'benar-salah') {
+                    let correctAnswersBS = [];
+                    for(let i = 1; i <= 5; i++) {
+                        if(q[`OPTION${i}`]) correctAnswersBS.push(`"${q[`OPTION${i}`]}": <b>${q[`ANSWER${i}`]}</b>`);
+                    }
+                    correctAnswerHTML = `<p>Jawaban Benar: { ${correctAnswersBS.join(', ')} }</p>`;
+                } else if (type === 'menjodohkan') {
+                    const correctPairs = [];
+                    for(let i = 1; i <= 5; i++) {
+                        if (q[`OPTION${i}`] && q[`ANSWER${i}`]) correctPairs.push({ soal: q[`OPTION${i}`], jodoh: q[`ANSWER${i}`] });
+                    }
+                    const correctPairsText = correctPairs.map(p => `( ${p.soal} -> <b>${p.jodoh}</b> )`).join(', ');
+                    correctAnswerHTML = `<p>Jawaban Benar: ${correctPairsText}</p>`;
+                }
+            }
+
+            let userAnswerText;
+            if (userAnswer === null) {
+                userAnswerText = 'Tidak dijawab';
+            } else if (Array.isArray(userAnswer)) {
+                if (userAnswer[0] && typeof userAnswer[0] === 'object') {
+                    userAnswerText = userAnswer.map(p => `(${p.soal} -> ${p.jodoh})`).join(', ');
+                } else {
+                    userAnswerText = userAnswer.join(', ');
+                }
+            } else if (typeof userAnswer === 'object') {
+                userAnswerText = JSON.stringify(userAnswer).replace(/["{}]/g, ' ').replace(/,/g, ', ').replace(/:/g,': ');
+            } else {
+                userAnswerText = userAnswer;
+            }
+
+            reviewArea.innerHTML += `
+                <div class="review-block ${isCorrect ? 'correct' : 'wrong'}">
+                    ${questionContent}
+                    <p><i>Jawaban Anda: ${userAnswerText}</i></p>
+                    ${isCorrect ? '<p><b>Jawaban Anda Benar!</b></p>' : correctAnswerHTML}
+                </div>`;
+        });
+    }
+
+    function resetQuiz() {
+        questions=[],userAnswers=[],currentQuestionIndex=0,clearInterval(timerInterval),document.getElementById('start-form').reset(),document.getElementById('nav-grid').innerHTML='',document.getElementById('review-area').innerHTML='',resultPage.classList.add('hidden'),quizPage.classList.add('hidden'),startPage.classList.remove('hidden')
+    }
+
+    function renderNavPanel() { const navGrid = document.getElementById('nav-grid'); navGrid.innerHTML = ''; questions.forEach((_, index) => { const navBtn = document.createElement('button'); navBtn.className = 'nav-btn'; navBtn.textContent = index + 1; navBtn.onclick = () => showQuestion(index); navGrid.appendChild(navBtn); }); }
+    function updateNavStatus() { document.querySelectorAll('.nav-btn').forEach((btn, index) => { btn.className = 'nav-btn'; if (userAnswers[index] && userAnswers[index].answer !== null) btn.classList.add('answered'); if (userAnswers[index] && userAnswers[index].isFlagged) btn.classList.add('flagged'); if (index === currentQuestionIndex) btn.classList.add('current'); }); }
+    function updateFooter() { document.getElementById('prevBtn').disabled = currentQuestionIndex === 0; document.getElementById('nextBtn').disabled = currentQuestionIndex === questions.length - 1; document.getElementById('flagCheck').checked = userAnswers[currentQuestionIndex]?.isFlagged || false; }
+    function toggleFlag() { if(userAnswers[currentQuestionIndex]) { userAnswers[currentQuestionIndex].isFlagged = document.getElementById('flagCheck').checked; updateNavStatus(); } }
+    function startTimer(duration, display) { let timer = duration; timerInterval = setInterval(() => { const minutes = String(Math.floor(timer / 60)).padStart(2, '0'); const seconds = String(timer % 60).padStart(2, '0'); display.textContent = `${minutes}:${seconds}`; if (--timer < 0) { clearInterval(timerInterval); showModal('Waktu Habis', 'Waktu ujian Anda telah berakhir.', 'OK').then(submitQuiz); } }, 1000); }
+    
+    // Event Listeners
+    document.getElementById('start-form').addEventListener('submit', function(e) { e.preventDefault(); const nama = document.getElementById('namaLengkap').value; const sekolah = document.getElementById('namaSekolah').value; if (!nama || !sekolah) { showModal('Peringatan', 'Nama Lengkap dan Nama Sekolah wajib diisi.'); return; } document.getElementById('studentNameDisplay').textContent = nama; document.getElementById('schoolNameDisplay').textContent = sekolah; startPage.classList.add('hidden'); quizPage.classList.remove('hidden'); loadQuiz(document.getElementById('sheetSelector').value); });
+    document.getElementById('submitBtn').addEventListener('click', async () => { const confirmed = await showModal("Konfirmasi", "Apakah Anda yakin ingin menyelesaikan ujian?", "Ya, Selesaikan", "Batal"); if (confirmed) { clearInterval(timerInterval); submitQuiz(); } });
+    document.getElementById('prevBtn').addEventListener('click', () => showQuestion(currentQuestionIndex - 1));
+    document.getElementById('nextBtn').addEventListener('click', () => showQuestion(currentQuestionIndex + 1));
+    document.getElementById('flagCheck').addEventListener('change', toggleFlag);
+    document.getElementById('show-review-btn').addEventListener('click', () => { renderReview(); scoreContainer.classList.add('hidden'); reviewContainer.classList.remove('hidden'); });
+    document.getElementById('reset-quiz-btn').addEventListener('click', resetQuiz);
+    document.getElementById('print-cert-btn').addEventListener('click', () => window.print());
+
+</script>
+</body>
+</html>

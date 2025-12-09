@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Proktor Panel</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="icon" type="image/x-icon" href="https://lh3.googleusercontent.com/d/1_4llqCMNoBDmwDHsI7RYsCM6rSK5wEjw">
+    <style>
+        :root { --primary-color: #1a237e; --secondary-color: #5c6bc0; }
+        body { font-family: Arial, sans-serif; background-color: #e8eaf6; margin: 20px; color: #333; }
+        .container { max-width: 1000px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); display: none; }
+        h1, h2 { color: var(--primary-color); text-align: center; }
+        select, input[type="text"], input[type="password"] { width: 100%; padding: 10px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #ccc; box-sizing: border-box; }
+        button, .btn { background-color: var(--primary-color); color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; margin-left: 5px; }
+        button:hover, .btn:hover { background-color: var(--secondary-color); }
+        .controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .table-wrapper { max-height: 70vh; overflow-y: auto; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background-color: var(--primary-color); color: white; }
+        .action-btn { font-size: 12px; padding: 5px 8px; margin-right: 5px; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); }
+        .modal-content { background-color: #fefefe; margin: 10% auto; padding: 20px; border-radius: 5px; width: 90%; max-width: 500px; }
+        #password-modal { display: flex; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: #1a237e; align-items: center; justify-content: center; z-index: 9999; }
+        .password-box { background: #fff; padding: 30px; border-radius: 8px; text-align: center; width: 90%; max-width: 350px; }
+    </style>
+</head>
+<body>
+    <div id="password-modal">
+        <div class="password-box">
+            <h2>Login Proktor</h2>
+            <form id="password-form">
+                <input type="password" id="password-input" placeholder="Password Proktor" required>
+                <p id="password-error" style="color:red; height:15px;"></p>
+                <button type="submit">Masuk</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="container" id="main-container">
+        <h1>Manajemen Admin</h1>
+        <div class="controls">
+            <h2>Daftar Akun Admin</h2>
+            <button id="showFormBtn"><i class="fas fa-plus"></i> Tambah Admin</button>
+        </div>
+        <div id="loader" style="display: none; text-align:center; padding:20px;">Memuat data...</div>
+        <div class="table-wrapper">
+            <table id="adminTable">
+                <thead><tr><th>Aksi</th><th>Username</th><th>Password</th><th>Nama Sekolah</th><th>Sheet Tugas</th></tr></thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <h2 id="formTitle">Form Admin</h2>
+            <form id="adminForm">
+                <input type="hidden" id="rowIndex">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required>
+                <label for="password">Password</label>
+                <input type="text" id="password" name="password" required>
+                <label for="namaSekolah">Nama Sekolah</label>
+                <input type="text" id="namaSekolah" name="namaSekolah" required>
+                <label for="sheet">Sheet Tugas (Opsional)</label>
+                <input type="text" id="sheet" name="sheet">
+                
+                <div>
+                    <button type="submit" id="saveBtn">Simpan</button>
+                    <button type="button" id="cancelBtn">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<script>
+    const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwtLrRtnn0NHvECbioOHFVStNPpJidl4YJo7Urd9bKMY5h3tU4oeYCf3zgkKgPHLOCW/exec';
+    let currentAdminData = [];
+
+    function getEl(id) { return document.getElementById(id); }
+
+    async function postData(data) {
+        getEl('loader').style.display = 'block';
+        try {
+            const res = await fetch(APPS_SCRIPT_URL, { method: 'POST', body: JSON.stringify(data) });
+            const result = await res.json();
+            if (!result.success) throw new Error(result.message);
+            return result;
+        } catch (error) {
+            alert(`Error: ${error.message}`);
+            return null;
+        } finally {
+            getEl('loader').style.display = 'none';
+        }
+    }
+
+    async function fetchAdminUsers() {
+        getEl('loader').style.display = 'block';
+        try {
+            const res = await fetch(`${APPS_SCRIPT_URL}?action=getAdminUsers`);
+            const result = await res.json();
+            if (result.error) throw new Error(result.error);
+            currentAdminData = result.data;
+            displayAdminData(currentAdminData);
+        } catch (error) {
+            alert(`Gagal mengambil data admin: ${error.message}`);
+        } finally {
+            getEl('loader').style.display = 'none';
+        }
+    }
+
+    function displayAdminData(data) {
+        const tableBody = getEl('adminTable').querySelector('tbody');
+        tableBody.innerHTML = '';
+        if (!data || data.length === 0) {
+            tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Tidak ada data admin.</td></tr>`;
+            return;
+        }
+        data.forEach((rowData, index) => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <button class="edit-btn action-btn" data-index="${index}"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="delete-btn action-btn" data-index="${index}"><i class="fas fa-trash-alt"></i></button>
+                </td>
+                <td>${rowData.USERNAME || ''}</td>
+                <td>${rowData.PASSWORD || ''}</td>
+                <td>${rowData.NAMA_SEKOLAH || ''}</td>
+                <td>${rowData.SHEET || ''}</td>
+            `;
+            tableBody.appendChild(row);
+        });
+    }
+
+    function showForm(mode = 'add', data = {}, index = -1) {
+        getEl('adminForm').reset();
+        getEl('rowIndex').value = '';
+        if (mode === 'edit') {
+            getEl('formTitle').textContent = 'Edit Admin';
+            getEl('rowIndex').value = index + 2; // Google Sheet rows are 1-indexed, +1 for header
+            getEl('username').value = data.USERNAME;
+            getEl('password').value = data.PASSWORD;
+            getEl('namaSekolah').value = data.NAMA_SEKOLAH;
+            getEl('sheet').value = data.SHEET;
+        } else {
+            getEl('formTitle').textContent = 'Tambah Admin Baru';
+        }
+        getEl('adminModal').style.display = 'block';
+    }
+
+    async function handleSave(event) {
+        event.preventDefault();
+        const formData = new FormData(getEl('adminForm'));
+        const data = Object.fromEntries(formData.entries());
+        data.rowIndex = getEl('rowIndex').value;
+        data.action = data.rowIndex ? 'updateAdminUser' : 'createAdminUser';
+        
+        const result = await postData(data);
+        if (result) {
+            getEl('adminModal').style.display = 'none';
+            await fetchAdminUsers();
+            alert(result.message);
+        }
+    }
+
+    async function handleDelete(index) {
+        const originalIndex = currentAdminData[index].originalIndex; // You might need this if data is sorted/filtered
+        if (!confirm(`Yakin ingin menghapus admin "${currentAdminData[index].USERNAME}"?`)) return;
+        const result = await postData({ action: 'deleteAdminUser', rowIndex: index + 2 });
+        if (result) {
+            await fetchAdminUsers();
+            alert(result.message);
+        }
+    }
+
+    function initializeApp() {
+        getEl('main-container').style.display = 'block';
+        getEl('showFormBtn').addEventListener('click', () => showForm('add'));
+        getEl('adminForm').addEventListener('submit', handleSave);
+        getEl('cancelBtn').addEventListener('click', () => getEl('adminModal').style.display = 'none');
+        getEl('adminTable').addEventListener('click', e => {
+            const btn = e.target.closest('button');
+            if (!btn) return;
+            const index = parseInt(btn.dataset.index);
+            if (btn.classList.contains('edit-btn')) showForm('edit', currentAdminData[index], index);
+            if (btn.classList.contains('delete-btn')) handleDelete(index);
+        });
+        fetchAdminUsers();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const passwordModal = getEl('password-modal');
+        const passwordForm = getEl('password-form');
+        const passwordInput = getEl('password-input');
+        const passwordError = getEl('password-error');
+        
+        passwordForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const result = await postData({ action: 'proktorLogin', password: passwordInput.value });
+            if (result && result.success) {
+                passwordModal.style.display = 'none';
+                initializeApp();
+            } else {
+                passwordError.textContent = 'Password Salah!';
+                setTimeout(() => { passwordError.textContent = ''; }, 2000);
+            }
+        });
+    });
+</script>
+</body>
+</html>

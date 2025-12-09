@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamera Timestamp & Lokasi</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Script Phosphor Icons tidak lagi diperlukan -->
+
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        #captureBtn {
+            border: 4px solid white;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2), 0 0 0 4px rgba(255, 255, 255, 0.3);
+            transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        #captureBtn:active {
+            transform: scale(0.92);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(255, 255, 255, 0.2);
+        }
+        @keyframes flash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+        .flash-effect { animation: flash 0.5s ease-out; }
+        #infoOverlay p {
+            font-weight: bold;
+            text-shadow: 2px 2px 5px rgba(0, 0, 0, 1);
+            margin: 0;
+            line-height: 1.4;
+            font-size: 10px;
+        }
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .modal.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen text-white overflow-hidden">
+
+    <div class="w-full max-w-lg h-screen md:h-auto md:max-h-[90vh] bg-black rounded-lg shadow-2xl flex flex-col relative overflow-hidden">
+        
+        <div id="loadingMessage" class="absolute inset-0 bg-black bg-opacity-80 flex flex-col items-center justify-center z-50 transition-opacity duration-300">
+            <i id="loadingIcon" class="ph-camera-rotate text-5xl text-blue-400 animate-spin"></i>
+            <p id="loadingText" class="mt-4 text-lg text-center px-4">Membuka kamera...</p>
+        </div>
+
+        <div id="flashOverlay" class="absolute inset-0 bg-white z-40 pointer-events-none opacity-0"></div>
+
+        <!-- Tampilan Kamera Utama -->
+        <div id="cameraView" class="flex flex-col h-full">
+            <header class="p-4 flex justify-center items-center bg-gray-900 bg-opacity-50 z-20">
+                <h1 class="text-xl font-bold">Foto Timestamp</h1>
+            </header>
+            
+            <main class="relative flex-grow flex items-center justify-center bg-black">
+                <video id="videoFeed" class="w-full h-full object-cover" playsinline autoplay muted></video>
+                <div id="infoOverlay" class="absolute bottom-0 left-0 w-full p-4 text-white pointer-events-none z-10"></div>
+            </main>
+
+            <footer class="p-6 flex items-center justify-around bg-gray-900 bg-opacity-50 z-20">
+                <!-- Tombol Edit Waktu (kiri) dengan SVG -->
+                <button id="editTimeBtn" class="text-white/80 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256"><path d="M208,32H184V24a8,8,0,0,0-16,0v8H88V24a8,8,0,0,0-16,0v8H48A16,16,0,0,0,32,48V208a16,16,0,0,0,16,16H208a16,16,0,0,0,16-16V48A16,16,0,0,0,208,32Zm0,176H48V48H72v8a8,8,0,0,0,16,0V48h80v8a8,8,0,0,0,16,0V48h24V208ZM128,120H88a8,8,0,0,1,0-16h40a8,8,0,0,1,0,16Zm40,32H88a8,8,0,0,1,0-16h80a8,8,0,0,1,0,16Z"></path></svg>
+                </button>
+                <!-- Tombol Shutter (tengah) -->
+                <button id="captureBtn" class="w-20 h-20 bg-blue-500 rounded-full focus:outline-none"></button>
+                <!-- Tombol Profil (kanan) dengan SVG -->
+                <button id="profileBtn" class="text-white/80 hover:text-white transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="36" height="36" fill="currentColor" viewBox="0 0 256 256"><path d="M128,24A104,104,0,1,0,232,128,104.11,104.11,0,0,0,128,24ZM74.08,197.5a64.06,64.06,0,0,1,107.84,0,87.83,87.83,0,0,1-107.84,0ZM96,120a32,32,0,1,1,32,32A32,32,0,0,1,96,120Zm97.76,66.41a79.66,79.66,0,0,0-49.84-44.49,48,48,0,1,0-59.84,0,79.66,79.66,0,0,0-49.84,44.49,88,88,0,1,1,159.52,0Z"></path></svg>
+                </button>
+            </footer>
+        </div>
+
+        <!-- Tampilan Hasil Foto -->
+        <div id="resultView" class="hidden flex-col h-full">
+            <header class="p-4 text-center bg-gray-900"><h1 class="text-xl font-bold">Hasil Foto</h1></header>
+            <main class="relative flex-grow flex items-center justify-center bg-black p-4">
+                <img id="resultImage" class="max-w-full max-h-full rounded-lg shadow-lg" alt="Hasil foto">
+            </main>
+            <footer class="p-4 grid grid-cols-2 gap-4 bg-gray-900">
+                <button id="retakeBtn" class="w-full flex items-center justify-center gap-2 bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M232,96a8,8,0,0,1-8,8H175.31a80,80,0,0,1-142.62,0H24a8,8,0,0,1,0-16H80a8,8,0,0,1,7.92,6.66A64,64,0,0,1,215.3,86.42L227.88,73.85A8,8,0,0,1,240.12,86.12l-24,24A8,8,0,0,1,208,112a8,8,0,0,1-5.88-2.12L180.27,90.4a8,8,0,1,1,11.46-11.13L204.69,92A64.09,64.09,0,0,0,88,88a8,8,0,0,1,7.92-6.66,80,80,0,0,1,142.62,0H224A8,8,0,0,1,232,96Z"></path></svg><span>Ulangi</span></button>
+                <a id="downloadLink" href="#" download="foto-timestamp.png" class="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-lg transition no-underline"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 256 256"><path d="M213.66,122.34a8,8,0,0,1,0,11.32l-80,80a8,8,0,0,1-11.32-11.32L196.69,128,122.34,53.66a8,8,0,0,1,11.32-11.32l80,80ZM40,216H136a8,8,0,0,0,0-16H40a8,8,0,0,0,0,16Z"></path></svg><span>Unduh</span></a>
+            </footer>
+        </div>
+
+        <canvas id="canvas" class="hidden"></canvas>
+    </div>
+
+    <!-- Modal Edit Waktu -->
+    <div id="timeModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4">Edit Waktu</h2>
+            <input type="datetime-local" id="timeInput" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="closeTimeModalBtn" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded transition">Batal</button>
+                <button id="saveTimeBtn" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded transition">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Profil -->
+    <div id="profileModal" class="modal hidden fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4">
+        <div class="bg-gray-800 rounded-lg p-6 w-full max-w-sm">
+            <h2 class="text-xl font-bold mb-4">Profil Pengguna</h2>
+            <div class="space-y-4">
+                <input type="text" id="nameInput" placeholder="Nama Lengkap" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+                <input type="text" id="nrkInput" placeholder="NRK" class="w-full p-2 rounded bg-gray-700 text-white border border-gray-600">
+            </div>
+            <div class="mt-6 flex justify-end gap-4">
+                <button id="closeProfileModalBtn" class="bg-gray-600 hover:bg-gray-500 font-bold py-2 px-4 rounded transition">Batal</button>
+                <button id="saveProfileBtn" class="bg-blue-600 hover:bg-blue-500 font-bold py-2 px-4 rounded transition">Simpan</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Seleksi Elemen DOM ---
+        const video = document.getElementById('videoFeed');
+        const captureBtn = document.getElementById('captureBtn');
+        const canvas = document.getElementById('canvas');
+        const downloadLink = document.getElementById('downloadLink');
+        const resultImage = document.getElementById('resultImage');
+        const retakeBtn = document.getElementById('retakeBtn');
+        const cameraView = document.getElementById('cameraView');
+        const resultView = document.getElementById('resultView');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const flashOverlay = document.getElementById('flashOverlay');
+        const infoOverlay = document.getElementById('infoOverlay');
+        const context = canvas.getContext('2d');
+
+        // Modal Profil
+        const profileBtn = document.getElementById('profileBtn');
+        const profileModal = document.getElementById('profileModal');
+        const nameInput = document.getElementById('nameInput');
+        const nrkInput = document.getElementById('nrkInput');
+        const saveProfileBtn = document.getElementById('saveProfileBtn');
+        const closeProfileModalBtn = document.getElementById('closeProfileModalBtn');
+
+        // Modal Waktu
+        const editTimeBtn = document.getElementById('editTimeBtn');
+        const timeModal = document.getElementById('timeModal');
+        const timeInput = document.getElementById('timeInput');
+        const saveTimeBtn = document.getElementById('saveTimeBtn');
+        const closeTimeModalBtn = document.getElementById('closeTimeModalBtn');
+
+        // --- State Aplikasi ---
+        let userProfile = { name: '', nrk: '' };
+        let customTimestamp = '17 Agu 2025 16.42.37 WIB';
+
+        // --- Fungsi Utama ---
+        async function initialize() {
+            try {
+                await startCamera();
+                updateInfo();
+                loadingMessage.classList.add('opacity-0');
+                setTimeout(() => loadingMessage.classList.add('hidden'), 300);
+            } catch (error) {
+                document.getElementById('loadingIcon').className = 'ph-warning-circle text-5xl text-red-400';
+                document.getElementById('loadingText').innerHTML = `Error: ${error.message}<br>Pastikan Anda memberikan izin.`;
+            }
+        }
+
+        function startCamera() {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+                        audio: false
+                    });
+                    video.srcObject = stream;
+                    video.onloadedmetadata = () => resolve();
+                } catch (err) { reject(new Error("Gagal mengakses kamera.")); }
+            });
+        }
+
+        function getInfoLines() {
+            const lines = [
+                `Network : ${customTimestamp}`,
+                `Local   : ${customTimestamp}`,
+                `6°10'46,945"S 106°49'33,621"E`,
+                'No.5 Jalan Medan Merdeka Selatan',
+                'Kecamatan Gambir',
+                'Kota Jakarta Pusat',
+                'Daerah Khusus Ibukota Jakarta'
+            ];
+            if (userProfile.name) lines.push(userProfile.name);
+            if (userProfile.nrk) lines.push(userProfile.nrk);
+            return lines;
+        }
+
+        function updateInfo() {
+            infoOverlay.innerHTML = '';
+            const fontSize = Math.floor(video.clientWidth / 45);
+            getInfoLines().forEach(line => {
+                const p = document.createElement('p');
+                p.textContent = line;
+                p.style.fontSize = `${fontSize}px`;
+                infoOverlay.appendChild(p);
+            });
+        }
+
+        function captureImage() {
+            flashOverlay.classList.add('flash-effect');
+            setTimeout(() => flashOverlay.classList.remove('flash-effect'), 500);
+
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            const infoLines = getInfoLines();
+            const fontSize = Math.floor(canvas.width / 45);
+            const padding = fontSize * 1.5;
+            const lineHeight = fontSize * 1.4;
+            
+            context.font = `bold ${fontSize}px 'Inter', sans-serif`;
+            context.textAlign = 'left';
+            context.fillStyle = 'white';
+            context.shadowColor = 'rgba(0, 0, 0, 1)';
+            context.shadowBlur = 5;
+            context.shadowOffsetX = 2;
+            context.shadowOffsetY = 2;
+
+            infoLines.forEach((line, index) => {
+                const y = canvas.height - padding - ((infoLines.length - 1 - index) * lineHeight);
+                context.fillText(line, padding, y);
+            });
+            
+const imageDataUrl = canvas.toDataURL('image/jpeg', 0.9); // Simpan data gambar ke variabel
+
+resultImage.src = imageDataUrl; // Atur data untuk ditampilkan
+downloadLink.href = imageDataUrl; // Atur data yang sama untuk diunduh (INI BARIS YANG DITAMBAHKAN)
+
+downloadLink.download = `foto_${new Date().toISOString()}.jpeg`;
+showResultView();
+        }
+        
+        function showResultView() {
+            cameraView.classList.add('hidden');
+            resultView.classList.remove('hidden');
+            resultView.classList.add('flex');
+        }
+
+        function formatDateTime(date) {
+            const options = { day: 'numeric', month: 'short', year: 'numeric' };
+            const datePart = date.toLocaleDateString('id-ID', options);
+            const timePart = date.toLocaleTimeString('id-ID', { hour12: false }).replace(/\./g, '.');
+            return `${datePart} ${timePart} WIB`;
+        }
+
+        // --- Event Listeners ---
+        captureBtn.addEventListener('click', captureImage);
+        retakeBtn.addEventListener('click', () => {
+             cameraView.classList.remove('hidden');
+             resultView.classList.add('hidden');
+        });
+        window.addEventListener('resize', updateInfo);
+
+        // Modal Profil Listeners
+        profileBtn.addEventListener('click', () => profileModal.classList.remove('hidden'));
+        closeProfileModalBtn.addEventListener('click', () => profileModal.classList.add('hidden'));
+        saveProfileBtn.addEventListener('click', () => {
+            userProfile.name = nameInput.value.trim();
+            userProfile.nrk = nrkInput.value.trim();
+            profileModal.classList.add('hidden');
+            updateInfo();
+        });
+
+        // Modal Waktu Listeners
+        editTimeBtn.addEventListener('click', () => {
+            // Convert current string back to a value the input can understand
+            const date = new Date('2025-08-17T16:42:37'); // Fallback to original static date
+            timeInput.value = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}T${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+            timeModal.classList.remove('hidden');
+        });
+        closeTimeModalBtn.addEventListener('click', () => timeModal.classList.add('hidden'));
+        saveTimeBtn.addEventListener('click', () => {
+            if (timeInput.value) {
+                const newDate = new Date(timeInput.value);
+                customTimestamp = formatDateTime(newDate);
+                timeModal.classList.add('hidden');
+                updateInfo();
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', initialize);
+    </script>
+</body>
+</html>
